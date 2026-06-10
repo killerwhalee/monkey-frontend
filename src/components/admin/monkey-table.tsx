@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { MonkeyBulkCreateDialog } from '@/components/admin/monkey-bulk-create-dialog'
 import { MonkeyCreateDialog } from '@/components/admin/monkey-create-dialog'
-import { MonkeyDetailDialog } from '@/components/admin/monkey-detail-dialog'
-import { Badge } from '@/components/ui/badge'
+import { MonkeyDetailDialog } from '@/components/monkey-detail-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -86,16 +85,9 @@ export function MonkeyTable() {
                         disabled={updateMonkey.isPending}
                         aria-label={`${monkey.name} 운영 상태`}
                       />
-                      <Badge
-                        variant="outline"
-                        className={
-                          monkey.is_active
-                            ? 'border-positive/30 bg-positive/10 text-positive'
-                            : 'border-border text-muted-foreground'
-                        }
-                      >
+                      <span className="text-sm text-muted-foreground">
                         {monkey.is_active ? '운영 중' : '중단됨'}
-                      </Badge>
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
@@ -133,6 +125,7 @@ export function MonkeyTable() {
         onOpenChange={(open) => {
           if (!open) setSelectedMonkeyId(null)
         }}
+        showAllOrders
       />
     </Card>
   )

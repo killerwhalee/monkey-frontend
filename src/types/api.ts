@@ -24,6 +24,7 @@ export type OrderStatus = 'created' | 'skipped' | 'submitted' | 'succeeded' | 'f
 export interface Order {
   id: number
   monkey_id: number
+  monkey_name: string
   stock: Stock
   order_type: OrderType
   order_type_label: string

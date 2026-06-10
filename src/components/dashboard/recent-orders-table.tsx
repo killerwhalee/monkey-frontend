@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table'
 import { formatDateTime, formatNumber } from '@/lib/format'
 import { ORDER_STATUS_LABELS, ORDER_TYPE_LABELS } from '@/lib/labels'
+import { cn } from '@/lib/utils'
 import type { Order, OrderStatus } from '@/types/api'
 
 const STATUS_CLASS: Record<OrderStatus, string> = {
@@ -39,6 +40,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>원숭이</TableHead>
                 <TableHead>종목</TableHead>
                 <TableHead>유형</TableHead>
                 <TableHead className="text-right">수량</TableHead>
@@ -53,6 +55,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                 const quantity = order.executed_quantity || order.requested_quantity
                 return (
                   <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.monkey_name}</TableCell>
                     <TableCell>
                       <div className="font-medium">{order.stock.name}</div>
                       <div className="font-mono text-xs text-muted-foreground">
@@ -66,14 +69,14 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                     <TableCell className="text-right font-mono tabular-nums">
                       {price !== null ? formatNumber(price) : '—'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal">
                       <div className="flex flex-col gap-0.5">
-                        <Badge variant="outline" className={STATUS_CLASS[order.status]}>
+                        <Badge variant="outline" className={cn('w-fit', STATUS_CLASS[order.status])}>
                           {ORDER_STATUS_LABELS[order.status]}
                         </Badge>
                         {(order.status === 'failed' || order.status === 'skipped') &&
                           order.failure_reason && (
-                            <span className="max-w-[160px] truncate text-xs leading-tight text-muted-foreground">
+                            <span className="max-w-[240px] text-xs leading-tight break-words text-muted-foreground">
                               {order.failure_reason}
                             </span>
                           )}
