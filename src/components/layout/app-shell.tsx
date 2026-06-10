@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
+import { MarketStatusClock } from './market-status-clock'
 
 function NavTab({ to, children }: { to: string; children: ReactNode }) {
   return (
@@ -31,6 +32,7 @@ export function AppShell() {
           <NavLink to="/" className="font-mono text-sm font-semibold tracking-widest text-foreground">
             MONKEY
           </NavLink>
+          <MarketStatusClock />
           <nav className="flex items-center gap-1">
             <NavTab to="/">대시보드</NavTab>
             {isAuthenticated && isAdmin ? (
