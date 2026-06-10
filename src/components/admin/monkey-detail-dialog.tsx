@@ -120,9 +120,17 @@ export function MonkeyDetailDialog({ monkey, open, onOpenChange }: MonkeyDetailD
                         {ORDER_TYPE_LABELS[order.order_type]} · {order.stock.name} ·{' '}
                         {formatNumber(order.executed_quantity || order.requested_quantity)}주
                       </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {ORDER_STATUS_LABELS[order.status]}
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end gap-0.5">
+                        <span className="text-xs text-muted-foreground">
+                          {ORDER_STATUS_LABELS[order.status]}
+                        </span>
+                        {(order.status === 'failed' || order.status === 'skipped') &&
+                          order.failure_reason && (
+                            <span className="max-w-[140px] truncate text-xs leading-tight text-muted-foreground/70">
+                              {order.failure_reason}
+                            </span>
+                          )}
+                      </div>
                     </li>
                   ))}
                 </ul>

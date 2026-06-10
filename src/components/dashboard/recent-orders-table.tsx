@@ -67,9 +67,17 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                       {price !== null ? formatNumber(price) : '—'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={STATUS_CLASS[order.status]}>
-                        {ORDER_STATUS_LABELS[order.status]}
-                      </Badge>
+                      <div className="flex flex-col gap-0.5">
+                        <Badge variant="outline" className={STATUS_CLASS[order.status]}>
+                          {ORDER_STATUS_LABELS[order.status]}
+                        </Badge>
+                        {(order.status === 'failed' || order.status === 'skipped') &&
+                          order.failure_reason && (
+                            <span className="max-w-[160px] truncate text-xs leading-tight text-muted-foreground">
+                              {order.failure_reason}
+                            </span>
+                          )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right text-xs text-muted-foreground">
                       {formatDateTime(order.created_at)}
