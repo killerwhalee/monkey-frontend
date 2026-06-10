@@ -61,6 +61,7 @@ export interface Monkey {
   initial_balance: number
   min_quantity: number
   max_quantity: number
+  killed_at: string | null
   holdings: Holding[]
   recent_orders: Order[]
   metrics: MonkeyMetrics
@@ -83,6 +84,8 @@ export interface MonkeyBulkCreatePayload {
 export interface GlobalMonkeyControl {
   id: number
   enabled: boolean
+  kill_threshold: number
+  order_interval_seconds: number
   note: string
   created_at: string
   updated_at: string

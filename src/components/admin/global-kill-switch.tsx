@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
 import { useGlobalControl, useUpdateGlobalControl } from '@/hooks/use-global-control'
 import { formatDateTime } from '@/lib/format'
 
@@ -63,33 +61,29 @@ export function GlobalKillSwitch() {
         <CardDescription>모든 원숭이의 거래 동작을 한 번에 켜거나 끄는 긴급 제어입니다.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex items-center justify-between rounded-lg bg-muted/40 p-4 ring-1 ring-foreground/5">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={enabled}
-              onCheckedChange={handleToggle}
-              disabled={updateControl.isPending}
-              aria-label="전역 거래 스위치"
-            />
-            <div>
-              <p className="text-sm font-medium">{enabled ? '거래 활성화됨' : '거래 중단됨'}</p>
-              {data ? (
-                <p className="text-xs text-muted-foreground">
-                  마지막 변경: {formatDateTime(data.updated_at)}
-                </p>
-              ) : null}
-            </div>
+        <div className="flex flex-col gap-2 rounded-lg bg-muted/40 p-4 ring-1 ring-foreground/5">
+          <div className="flex gap-2">
+            <Button
+              variant={enabled ? 'default' : 'outline'}
+              className={enabled ? 'bg-positive text-positive-foreground hover:bg-positive/90' : ''}
+              onClick={() => handleToggle(true)}
+              disabled={updateControl.isPending || enabled}
+            >
+              거래 시작
+            </Button>
+            <Button
+              variant={!enabled ? 'destructive' : 'outline'}
+              onClick={() => handleToggle(false)}
+              disabled={updateControl.isPending || !enabled}
+            >
+              거래 중단
+            </Button>
           </div>
-          <Badge
-            variant="outline"
-            className={
-              enabled
-                ? 'border-positive/30 bg-positive/10 text-positive'
-                : 'border-destructive/30 bg-destructive/10 text-destructive'
-            }
-          >
-            {enabled ? 'ON' : 'OFF'}
-          </Badge>
+          {data ? (
+            <p className="text-xs text-muted-foreground">
+              마지막 변경: {formatDateTime(data.updated_at)}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="global-control-note">메모</Label>
