@@ -12,8 +12,8 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-mono text-2xl font-semibold tracking-tight">대시보드</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="text-center font-mono text-2xl font-semibold tracking-tight">원숭이 프로젝트</h1>
+        <p className="mt-1 text-center text-sm text-muted-foreground">
           무작위로 거래하는 원숭이들의 현재 상태를 실시간으로 모니터링합니다.
         </p>
       </div>
