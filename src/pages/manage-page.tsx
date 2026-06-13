@@ -1,9 +1,9 @@
 import { AccountSummaryCard } from '@/components/admin/account-summary-card'
-import { GlobalKillSwitch } from '@/components/admin/global-kill-switch'
 import { KisTokenStatusCard } from '@/components/admin/kis-token-status-card'
 import { MonkeyTable } from '@/components/admin/monkey-table'
+import { TradingControlCard } from '@/components/admin/trading-control-card'
 
-export function AdminPage() {
+export function ManagePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -14,7 +14,7 @@ export function AdminPage() {
       </div>
 
       <AccountSummaryCard />
-      <GlobalKillSwitch />
+      <TradingControlCard />
       <MonkeyTable />
       <KisTokenStatusCard />
     </div>

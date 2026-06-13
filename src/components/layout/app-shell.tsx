@@ -35,7 +35,7 @@ export function AppShell() {
             <NavTab to="/">대시보드</NavTab>
             {isAuthenticated && isAdmin ? (
               <>
-                <NavTab to="/admin">관리자</NavTab>
+                <NavTab to="/manage">관리자</NavTab>
                 <Button variant="ghost" size="sm" onClick={logout}>
                   로그아웃
                 </Button>
