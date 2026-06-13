@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -90,6 +91,7 @@ export function MonkeyDetailDialog({
                 valueClassName={signColorClass(monkey.metrics.earning_ratio)}
               />
               <DetailStat label="초기 자본금" value={formatCurrency(monkey.initial_balance)} />
+              <DetailStat label="거래 주기" value={`${monkey.order_interval_seconds}초`} />
             </div>
 
             <div>
@@ -108,7 +110,12 @@ export function MonkeyDetailDialog({
                     {monkey.holdings.map((holding) => (
                       <TableRow key={holding.id}>
                         <TableCell>
-                          <div className="font-medium">{holding.stock.name}</div>
+                          <div className="flex items-center gap-1.5 font-medium">
+                            {holding.stock.name}
+                            {!holding.stock.is_active && (
+                              <Badge variant="destructive">상장폐지</Badge>
+                            )}
+                          </div>
                           <div className="font-mono text-xs text-muted-foreground">
                             {holding.stock.ticker}
                           </div>

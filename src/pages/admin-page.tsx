@@ -1,3 +1,4 @@
+import { AccountSummaryCard } from '@/components/admin/account-summary-card'
 import { GlobalKillSwitch } from '@/components/admin/global-kill-switch'
 import { KisTokenStatusCard } from '@/components/admin/kis-token-status-card'
 import { MonkeyTable } from '@/components/admin/monkey-table'
@@ -12,6 +13,7 @@ export function AdminPage() {
         </p>
       </div>
 
+      <AccountSummaryCard />
       <GlobalKillSwitch />
       <MonkeyTable />
       <KisTokenStatusCard />

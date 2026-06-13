@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EarningRatioCandlestickChart } from '@/components/dashboard/earning-ratio-candlestick-chart';
 import { EarningRatioChart } from '@/components/dashboard/earning-ratio-chart';
 import { MarketStatusBanner } from '@/components/dashboard/market-status-banner';
 import { MonkeyListDialog } from '@/components/dashboard/monkey-list-dialog';
@@ -64,6 +65,12 @@ export function DashboardPage() {
 				<Skeleton className="h-64 w-full" />
 			) : (
 				<EarningRatioChart data={data?.daily_earning_ratio_series ?? []} />
+			)}
+
+			{isPending ? (
+				<Skeleton className="h-64 w-full" />
+			) : (
+				<EarningRatioCandlestickChart data={data?.candlestick_series ?? []} />
 			)}
 
 			{isPending ? (

@@ -17,8 +17,7 @@ import { useCreateMonkey } from '@/hooks/use-monkeys'
 const INITIAL_FORM = {
   name: '',
   initial_balance: '1000000',
-  min_quantity: '1',
-  max_quantity: '10',
+  order_interval_seconds: '300',
 }
 
 export function MonkeyCreateDialog() {
@@ -40,8 +39,7 @@ export function MonkeyCreateDialog() {
     setError(null)
 
     const initialBalance = Number(form.initial_balance)
-    const minQuantity = Number(form.min_quantity)
-    const maxQuantity = Number(form.max_quantity)
+    const orderIntervalSeconds = Number(form.order_interval_seconds)
 
     if (!form.name.trim()) {
       setError('이름을 입력해 주세요.')
@@ -51,12 +49,12 @@ export function MonkeyCreateDialog() {
       setError('초기 자본금은 0 이상의 숫자여야 합니다.')
       return
     }
-    if (!Number.isFinite(minQuantity) || minQuantity < 1) {
-      setError('최소 매매 수량은 1 이상이어야 합니다.')
-      return
-    }
-    if (!Number.isFinite(maxQuantity) || maxQuantity < minQuantity) {
-      setError('최대 매매 수량은 최소 수량 이상이어야 합니다.')
+    if (
+      !Number.isInteger(orderIntervalSeconds) ||
+      orderIntervalSeconds < 60 ||
+      orderIntervalSeconds > 1800
+    ) {
+      setError('거래 주기는 60~1800 사이의 정수(초)여야 합니다.')
       return
     }
 
@@ -66,8 +64,7 @@ export function MonkeyCreateDialog() {
         is_active: true,
         balance: initialBalance,
         initial_balance: initialBalance,
-        min_quantity: minQuantity,
-        max_quantity: maxQuantity,
+        order_interval_seconds: orderIntervalSeconds,
       },
       {
         onSuccess: () => {
@@ -112,33 +109,19 @@ export function MonkeyCreateDialog() {
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="monkey-min-quantity">최소 매매 수량</Label>
-              <Input
-                id="monkey-min-quantity"
-                type="number"
-                min={1}
-                value={form.min_quantity}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, min_quantity: event.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="monkey-max-quantity">최대 매매 수량</Label>
-              <Input
-                id="monkey-max-quantity"
-                type="number"
-                min={1}
-                value={form.max_quantity}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, max_quantity: event.target.value }))
-                }
-                required
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="monkey-order-interval">거래 주기 (초)</Label>
+            <Input
+              id="monkey-order-interval"
+              type="number"
+              min={60}
+              max={1800}
+              value={form.order_interval_seconds}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, order_interval_seconds: event.target.value }))
+              }
+              required
+            />
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>

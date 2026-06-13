@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useMonkeys, useUpdateMonkey } from '@/hooks/use-monkeys'
+import { useAutoCreateMonkeys, useForceKillMonkey, useMonkeys, useUpdateMonkey } from '@/hooks/use-monkeys'
 import { formatCurrency, formatPercent, signColorClass } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Monkey } from '@/types/api'
@@ -23,6 +23,8 @@ import type { Monkey } from '@/types/api'
 export function MonkeyTable() {
   const { data: monkeys, isPending, isError } = useMonkeys()
   const updateMonkey = useUpdateMonkey()
+  const forceKillMonkey = useForceKillMonkey()
+  const autoCreateMonkeys = useAutoCreateMonkeys()
   const [selectedMonkeyId, setSelectedMonkeyId] = useState<number | null>(null)
   const selectedMonkey = monkeys?.find((monkey) => monkey.id === selectedMonkeyId) ?? null
 
@@ -38,6 +40,29 @@ export function MonkeyTable() {
     )
   }
 
+  function handleForceKill(monkey: Monkey) {
+    if (!window.confirm(`'${monkey.name}' 원숭이를 강제 종료하고 모든 보유 종목을 매도할까요?`)) {
+      return
+    }
+    forceKillMonkey.mutate(monkey.id, {
+      onSuccess: () => toast.success(`'${monkey.name}' 원숭이를 강제 종료했습니다.`),
+      onError: () => toast.error('강제 종료에 실패했습니다.'),
+    })
+  }
+
+  function handleAutoCreate() {
+    autoCreateMonkeys.mutate(undefined, {
+      onSuccess: (created) => {
+        if (created.length === 0) {
+          toast.info('조건을 만족하는 원숭이가 없습니다.')
+        } else {
+          toast.success(`원숭이 ${created.length}마리를 자동 생성했습니다.`)
+        }
+      },
+      onError: () => toast.error('자동 생성에 실패했습니다.'),
+    })
+  }
+
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
@@ -46,6 +71,13 @@ export function MonkeyTable() {
           <CardDescription>원숭이를 생성하거나 운영 상태를 관리합니다.</CardDescription>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleAutoCreate}
+            disabled={autoCreateMonkeys.isPending}
+          >
+            자동 생성
+          </Button>
           <MonkeyBulkCreateDialog />
           <MonkeyCreateDialog />
         </div>
@@ -67,10 +99,12 @@ export function MonkeyTable() {
               <TableRow>
                 <TableHead>이름</TableHead>
                 <TableHead>운영 상태</TableHead>
+                <TableHead className="text-right">거래 주기</TableHead>
                 <TableHead className="text-right">총 자산</TableHead>
                 <TableHead className="text-right">수익률</TableHead>
                 <TableHead className="text-right">보유 종목</TableHead>
                 <TableHead className="text-right">상세</TableHead>
+                <TableHead className="text-right">관리</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,6 +125,9 @@ export function MonkeyTable() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
+                    {monkey.order_interval_seconds}초
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">
                     {formatCurrency(monkey.metrics.total_equity)}
                   </TableCell>
                   <TableCell
@@ -107,6 +144,16 @@ export function MonkeyTable() {
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedMonkeyId(monkey.id)}>
                       자세히
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleForceKill(monkey)}
+                      disabled={!monkey.is_active || forceKillMonkey.isPending}
+                    >
+                      강제 종료
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -17,8 +17,6 @@ import { useBulkCreateMonkeys } from '@/hooks/use-monkeys'
 const INITIAL_FORM = {
   count: '10',
   starting_balance: '1000000',
-  min_quantity: '1',
-  max_quantity: '10',
 }
 
 export function MonkeyBulkCreateDialog() {
@@ -41,8 +39,6 @@ export function MonkeyBulkCreateDialog() {
 
     const count = Number(form.count)
     const startingBalance = Number(form.starting_balance)
-    const minQuantity = Number(form.min_quantity)
-    const maxQuantity = Number(form.max_quantity)
 
     if (!Number.isInteger(count) || count < 1 || count > 1000) {
       setError('생성 개수는 1~1000 사이의 정수여야 합니다.')
@@ -52,21 +48,11 @@ export function MonkeyBulkCreateDialog() {
       setError('시작 자본금은 0 이상의 숫자여야 합니다.')
       return
     }
-    if (!Number.isInteger(minQuantity) || minQuantity < 1) {
-      setError('최소 매매 수량은 1 이상의 정수여야 합니다.')
-      return
-    }
-    if (!Number.isInteger(maxQuantity) || maxQuantity < minQuantity) {
-      setError('최대 매매 수량은 최소 수량 이상의 정수여야 합니다.')
-      return
-    }
 
     bulkCreateMonkeys.mutate(
       {
         count,
         starting_balance: startingBalance,
-        min_quantity: minQuantity,
-        max_quantity: maxQuantity,
       },
       {
         onSuccess: (created) => {
@@ -115,34 +101,6 @@ export function MonkeyBulkCreateDialog() {
               }
               required
             />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="bulk-min-quantity">최소 매매 수량</Label>
-              <Input
-                id="bulk-min-quantity"
-                type="number"
-                min={1}
-                value={form.min_quantity}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, min_quantity: event.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="bulk-max-quantity">최대 매매 수량</Label>
-              <Input
-                id="bulk-max-quantity"
-                type="number"
-                min={1}
-                value={form.max_quantity}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, max_quantity: event.target.value }))
-                }
-                required
-              />
-            </div>
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
