@@ -65,14 +65,13 @@ export function ProjectIntroSection() {
 								<span className="font-medium text-foreground">
 									🟢 매수 버튼
 								</span>{' '}
-								— 랜덤한 종목을 선택한 뒤, 랜덤한 수량만큼 매수합니다.
+								— 랜덤한 종목을 선택한 뒤, 1주를 매수합니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">
 									🔴 매도 버튼
 								</span>{' '}
-								— 현재 보유 중인 종목 가운데 하나를 선택한 뒤, 랜덤한 수량만큼
-								매도합니다.
+								— 현재 보유 중인 종목 가운데 하나를 선택한 뒤, 1주를 매도합니다.
 							</li>
 						</ul>
 						<p className="mt-2">
@@ -87,8 +86,8 @@ export function ProjectIntroSection() {
 							원숭이 정보
 						</h3>
 						<p className="mt-2">
-							원숭이가 태어날 때는 초기 자본, 최소 매매 수량, 최대 매매 수량이
-							고정됩니다. 현재 설정은 다음과 같습니다.
+							원숭이가 태어날 때는 초기 자본, 매매 단위, 거래 주기가 고정됩니다.
+							현재 설정은 다음과 같습니다.
 						</p>
 						<div className="mt-3">
 							<Table>
@@ -106,28 +105,34 @@ export function ProjectIntroSection() {
 										</TableCell>
 									</TableRow>
 									<TableRow>
-										<TableCell>최소 매매 수량</TableCell>
+										<TableCell>매매 단위</TableCell>
 										<TableCell className="text-right font-mono tabular-nums">
 											1주
 										</TableCell>
 									</TableRow>
 									<TableRow>
-										<TableCell>최대 매매 수량</TableCell>
+										<TableCell>거래 주기</TableCell>
 										<TableCell className="text-right font-mono tabular-nums">
-											10주
+											원숭이마다 1분~30분 사이로 무작위 설정
 										</TableCell>
 									</TableRow>
 								</TableBody>
 							</Table>
 						</div>
+						<p className="mt-2">
+							새로 태어난 원숭이에게는 흔한 애완동물 이름이 무작위로 주어집니다.
+							이름이 중복되면 로마 숫자를 붙여 구분합니다 (예: &ldquo;Arthur
+							VI&rdquo;).
+						</p>
 						<p className="mt-3">
 							<span className="font-medium text-foreground">
 								Q. 100만 원은 어디서 났나요?
 							</span>
 							<br />
-							5억 원짜리 모의투자 계좌를 만들어, 원숭이 500마리를 동시에 운영할
-							수 있습니다. 다만 모의투자 계좌는 3개월마다 초기화되므로, 이
-							부분은 추후 보완할 계획입니다.
+							시스템이 실제 모의투자 계좌의 예수금을 주기적으로 확인하여, 아직
+							할당되지 않은 현금이 100만 원 이상 남아 있으면 새 원숭이를 자동으로
+							생성합니다. 매일 자동으로 한 번씩 확인하며, 관리자가 직접 버튼을
+							눌러 즉시 확인할 수도 있습니다.
 						</p>
 						<p className="mt-2">
 							현재 원숭이들은 KRX(한국거래소)에서만 활동합니다. 해가 지지 않는
@@ -148,9 +153,9 @@ export function ProjectIntroSection() {
 								주식 시장이 개장하면 깨어납니다.
 							</li>
 							<li>
-								<span className="font-medium text-foreground">거래</span> — 매
-								분마다 한 번씩 매수 또는 매도 중 하나를 행동합니다. 어떤 버튼을
-								누를지는 원숭이 자신도 모릅니다.
+								<span className="font-medium text-foreground">거래</span> —
+								원숭이마다 정해진 주기(1분~30분)마다 한 번씩 매수 또는 매도 중
+								하나를 행동합니다. 어떤 버튼을 누를지는 원숭이 자신도 모릅니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">장 종료</span> —
@@ -233,6 +238,10 @@ export function ProjectIntroSection() {
 								생각이 없진 않지만, 별로 좋은 생각이 아닐지도요..
 							</li>
 							<li>실제 주식 시장에서 쓰는 차트 그래프도 도입하고 싶습니다.</li>
+							<li>
+								보유 종목과 실제 계좌의 보유 현황이 어긋나는 경우(상장폐지 등),
+								시스템이 매일 자동으로 점검하여 정리합니다.
+							</li>
 						</ul>
 					</section>
 				</article>
