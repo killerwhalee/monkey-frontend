@@ -3,6 +3,7 @@ export interface Stock {
   market: string
   ticker: string
   name: string
+  is_active: boolean
 }
 
 export interface Holding {
@@ -60,8 +61,7 @@ export interface Monkey {
   is_active: boolean
   balance: number
   initial_balance: number
-  min_quantity: number
-  max_quantity: number
+  order_interval_seconds: number
   killed_at: string | null
   holdings: Holding[]
   recent_orders: Order[]
@@ -78,15 +78,12 @@ export interface MonkeySummaryItem {
 export interface MonkeyBulkCreatePayload {
   count: number
   starting_balance: number
-  min_quantity?: number
-  max_quantity?: number
 }
 
 export interface GlobalMonkeyControl {
   id: number
   enabled: boolean
   kill_threshold: number
-  order_interval_seconds: number
   note: string
   created_at: string
   updated_at: string
@@ -106,12 +103,35 @@ export interface DailyEarningRatioPoint {
   best_earning_ratio: number
 }
 
+export interface EarningRatioCandlestick {
+  date: string
+  open: number
+  high: number
+  low: number
+  close: number
+}
+
 export interface DashboardSummary {
   active_monkey_count: number
   average_earning_ratio: number
   best_earning_ratio: number
   latest_orders: Order[]
   daily_earning_ratio_series: DailyEarningRatioPoint[]
+  candlestick_series: EarningRatioCandlestick[]
+}
+
+export interface AccountSummary {
+  kis_cash_balance: number
+  unallocated_cash: number
+  monkey_count: number
+  active_monkey_count: number
+  total_monkey_balance: number
+  total_holdings_value: number
+  total_equity: number
+  average_earning_ratio: number
+  best_earning_ratio: number
+  system_balance: number
+  system_holdings_value: number
 }
 
 export interface TokenObtainResponse {

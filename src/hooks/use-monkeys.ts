@@ -16,8 +16,7 @@ interface CreateMonkeyPayload {
   is_active: boolean
   balance: number
   initial_balance: number
-  min_quantity: number
-  max_quantity: number
+  order_interval_seconds: number
 }
 
 export function useCreateMonkey() {
@@ -45,8 +44,7 @@ interface UpdateMonkeyPayload {
   id: number
   is_active?: boolean
   name?: string
-  min_quantity?: number
-  max_quantity?: number
+  order_interval_seconds?: number
 }
 
 export function useUpdateMonkey() {
@@ -54,6 +52,26 @@ export function useUpdateMonkey() {
   return useMutation({
     mutationFn: ({ id, ...payload }: UpdateMonkeyPayload) =>
       api.patch<Monkey>(`/monkeys/${id}/`, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: MONKEYS_KEY })
+    },
+  })
+}
+
+export function useForceKillMonkey() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<Monkey>(`/monkeys/${id}/force-kill/`, {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: MONKEYS_KEY })
+    },
+  })
+}
+
+export function useAutoCreateMonkeys() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<Monkey[]>('/monkeys/auto-create/', {}),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: MONKEYS_KEY })
     },
