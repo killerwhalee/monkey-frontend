@@ -1,97 +1,90 @@
+import { useState } from 'react'
+import { ChevronDownIcon } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { formatDateTime, formatNumber } from '@/lib/format'
-import { ORDER_STATUS_LABELS, ORDER_TYPE_LABELS } from '@/lib/labels'
+import { ORDER_TYPE } from '@/types/api'
+import { ORDER_TYPE_LABELS } from '@/lib/labels'
 import { cn } from '@/lib/utils'
-import type { Order, OrderStatus } from '@/types/api'
-
-const STATUS_CLASS: Record<OrderStatus, string> = {
-  created: 'border-border text-muted-foreground',
-  submitted: 'border-border text-foreground',
-  skipped: 'border-border text-muted-foreground',
-  succeeded: 'border-positive/30 bg-positive/10 text-positive',
-  failed: 'border-destructive/30 bg-destructive/10 text-destructive',
-}
+import type { Order } from '@/types/api'
 
 interface RecentOrdersTableProps {
   orders: Order[]
 }
 
 export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
+  const [open, setOpen] = useState(true)
+  const succeeded = orders.filter((order) => order.status === 'succeeded')
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>최근 주문 내역</CardTitle>
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="flex w-full items-center justify-between gap-2 text-left"
+        >
+          <CardTitle>
+            최근 체결 주문
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {formatNumber(succeeded.length)}건
+            </span>
+          </CardTitle>
+          <ChevronDownIcon
+            className={cn(
+              'size-4 text-muted-foreground transition-transform',
+              !open && '-rotate-90',
+            )}
+          />
+        </button>
       </CardHeader>
-      <CardContent>
-        {orders.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            아직 발생한 주문이 없습니다.
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>원숭이</TableHead>
-                <TableHead>종목</TableHead>
-                <TableHead>유형</TableHead>
-                <TableHead className="text-right">수량</TableHead>
-                <TableHead className="text-right">가격</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead className="text-right">시각</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => {
-                const price = order.executed_price ?? order.estimated_price ?? order.price
-                const quantity = order.executed_quantity || order.requested_quantity
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.monkey_name}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{order.stock.name}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {order.stock.ticker}
-                      </div>
-                    </TableCell>
-                    <TableCell>{ORDER_TYPE_LABELS[order.order_type]}</TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {formatNumber(quantity)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {price !== null ? formatNumber(price) : '—'}
-                    </TableCell>
-                    <TableCell className="whitespace-normal">
-                      <div className="flex flex-col gap-0.5">
-                        <Badge variant="outline" className={cn('w-fit', STATUS_CLASS[order.status])}>
-                          {ORDER_STATUS_LABELS[order.status]}
-                        </Badge>
-                        {(order.status === 'failed' || order.status === 'skipped') &&
-                          order.failure_reason && (
-                            <span className="max-w-[240px] text-xs leading-tight break-words text-muted-foreground">
-                              {order.failure_reason}
-                            </span>
-                          )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right text-xs text-muted-foreground">
-                      {formatDateTime(order.created_at)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+      {open ? (
+        <CardContent>
+          {succeeded.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              아직 체결된 주문이 없습니다.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {succeeded.map((order) => (
+                <OrderRow key={order.id} order={order} />
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      ) : null}
     </Card>
+  )
+}
+
+export function OrderRow({ order, showMonkey = true }: { order: Order; showMonkey?: boolean }) {
+  const quantity = order.executed_quantity || order.requested_quantity
+  const isBuy = order.order_type === ORDER_TYPE.BUY
+
+  return (
+    <li className="flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2">
+      <div className="min-w-0">
+        <div className="truncate text-sm font-medium">{order.stock.name}</div>
+        <div className="font-mono text-xs text-muted-foreground">
+          {showMonkey ? `${order.monkey_name} · ` : ''}
+          {formatDateTime(order.created_at)}
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Badge
+          variant="outline"
+          className={cn(
+            'w-fit',
+            isBuy
+              ? 'border-positive/30 bg-positive/10 text-positive'
+              : 'border-destructive/30 bg-destructive/10 text-destructive',
+          )}
+        >
+          {ORDER_TYPE_LABELS[order.order_type]}
+        </Badge>
+        <span className="font-mono text-sm tabular-nums">{formatNumber(quantity)}주</span>
+      </div>
+    </li>
   )
 }

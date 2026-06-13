@@ -1,3 +1,7 @@
+import { useState, type ReactNode } from 'react'
+import { ChevronDownIcon } from 'lucide-react'
+
+import { OrderRow } from '@/components/dashboard/recent-orders-table'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -6,20 +10,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Pagination } from '@/components/ui/pagination'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SortableHead } from '@/components/ui/sortable-head'
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
 import { useMonkeyOrders } from '@/hooks/use-orders'
-import { formatCurrency, formatNumber, formatPercent, signColorClass } from '@/lib/format'
-import { ORDER_STATUS_LABELS, ORDER_TYPE_LABELS } from '@/lib/labels'
+import { useTableControls } from '@/hooks/use-table-controls'
+import {
+  formatCurrency,
+  formatInterval,
+  formatNumber,
+  formatPercent,
+  signColorClass,
+} from '@/lib/format'
 import { cn } from '@/lib/utils'
-import type { Monkey } from '@/types/api'
+import type { Holding, Monkey, Order } from '@/types/api'
 
 interface MonkeyDetailDialogProps {
   monkey: Monkey | null
@@ -45,6 +56,33 @@ function DetailStat({
   )
 }
 
+function Section({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: ReactNode
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="mb-2 flex w-full items-center justify-between gap-2 text-left"
+      >
+        <h3 className="text-sm font-medium">{title}</h3>
+        <ChevronDownIcon
+          className={cn('size-4 text-muted-foreground transition-transform', !open && '-rotate-90')}
+        />
+      </button>
+      {open ? children : null}
+    </div>
+  )
+}
+
 export function MonkeyDetailDialog({
   monkey,
   open,
@@ -56,10 +94,32 @@ export function MonkeyDetailDialog({
     open && showAllOrders,
   )
 
-  const orders = showAllOrders ? (allOrders ?? []) : (monkey?.recent_orders ?? [])
-  const ordersTitle = showAllOrders
-    ? `전체 주문 내역${allOrders ? ` (${formatNumber(allOrders.length)}건)` : ''}`
-    : '최근 주문 (최대 10건)'
+  const holdings = useTableControls<Holding>({
+    rows: monkey?.holdings ?? [],
+    columns: {
+      name: (holding) => holding.stock.name,
+      quantity: (holding) => holding.quantity,
+      average_price: (holding) => holding.average_price,
+      current_price: (holding) => holding.current_price,
+      profit: (holding) => holding.profit,
+      profit_rate: (holding) => holding.profit_rate,
+    },
+    initialSortKey: 'profit_rate',
+    initialSortDir: 'desc',
+    initialPageSize: 10,
+  })
+
+  const rawOrders = showAllOrders ? (allOrders ?? []) : (monkey?.recent_orders ?? [])
+  const succeededOrders = rawOrders.filter((order) => order.status === 'succeeded')
+  const orders = useTableControls<Order>({
+    rows: succeededOrders,
+    columns: { created_at: (order) => order.created_at },
+    initialSortKey: 'created_at',
+    initialSortDir: 'desc',
+    initialPageSize: 10,
+  })
+
+  const totalShares = (monkey?.holdings ?? []).reduce((sum, holding) => sum + holding.quantity, 0)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,82 +151,154 @@ export function MonkeyDetailDialog({
                 valueClassName={signColorClass(monkey.metrics.earning_ratio)}
               />
               <DetailStat label="초기 자본금" value={formatCurrency(monkey.initial_balance)} />
-              <DetailStat label="거래 주기" value={`${monkey.order_interval_seconds}초`} />
+              <DetailStat label="거래 주기" value={formatInterval(monkey.order_interval_seconds)} />
             </div>
 
-            <div>
-              <h3 className="mb-2 text-sm font-medium">보유 종목</h3>
+            <Section
+              title={`보유 종목 ${formatNumber(monkey.holdings.length)}종 · 총 ${formatNumber(totalShares)}주`}
+            >
               {monkey.holdings.length === 0 ? (
                 <p className="text-sm text-muted-foreground">보유 중인 종목이 없습니다.</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>종목</TableHead>
-                      <TableHead className="text-right">수량</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {monkey.holdings.map((holding) => (
-                      <TableRow key={holding.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 font-medium">
-                            {holding.stock.name}
-                            {!holding.stock.is_active && (
-                              <Badge variant="destructive">상장폐지</Badge>
-                            )}
-                          </div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {holding.stock.ticker}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-mono tabular-nums">
-                          {formatNumber(holding.quantity)}
-                        </TableCell>
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <SortableHead
+                          sortKey="name"
+                          label="종목"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
+                        <SortableHead
+                          sortKey="quantity"
+                          label="수량"
+                          align="right"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
+                        <SortableHead
+                          sortKey="average_price"
+                          label="평균가"
+                          align="right"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
+                        <SortableHead
+                          sortKey="current_price"
+                          label="현재가"
+                          align="right"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
+                        <SortableHead
+                          sortKey="profit"
+                          label="평가손익"
+                          align="right"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
+                        <SortableHead
+                          sortKey="profit_rate"
+                          label="수익률"
+                          align="right"
+                          activeKey={holdings.sortKey}
+                          direction={holdings.sortDir}
+                          onToggle={holdings.toggleSort}
+                        />
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {holdings.rows.map((holding) => (
+                        <TableRow key={holding.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 font-medium">
+                              {holding.stock.name}
+                              {!holding.stock.is_active && (
+                                <Badge variant="destructive">상장폐지</Badge>
+                              )}
+                            </div>
+                            <div className="font-mono text-xs text-muted-foreground">
+                              {holding.stock.ticker}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {formatNumber(holding.quantity)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {formatNumber(holding.average_price)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {formatNumber(holding.current_price)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              'text-right font-mono tabular-nums',
+                              signColorClass(holding.profit),
+                            )}
+                          >
+                            {formatCurrency(holding.profit)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              'text-right font-mono tabular-nums',
+                              signColorClass(holding.profit_rate),
+                            )}
+                          >
+                            {formatPercent(holding.profit_rate)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {holdings.pageCount > 1 ? (
+                    <Pagination
+                      page={holdings.page}
+                      pageCount={holdings.pageCount}
+                      pageSize={holdings.pageSize}
+                      total={holdings.total}
+                      onPageChange={holdings.setPage}
+                      onPageSizeChange={holdings.setPageSize}
+                    />
+                  ) : null}
+                </>
               )}
-            </div>
+            </Section>
 
-            <div>
-              <h3 className="mb-2 text-sm font-medium">{ordersTitle}</h3>
+            <Section title={`체결 주문 ${formatNumber(succeededOrders.length)}건`}>
               {showAllOrders && ordersPending ? (
                 <div className="flex flex-col gap-2">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                 </div>
-              ) : orders.length === 0 ? (
-                <p className="text-sm text-muted-foreground">주문 내역이 없습니다.</p>
+              ) : succeededOrders.length === 0 ? (
+                <p className="text-sm text-muted-foreground">체결된 주문이 없습니다.</p>
               ) : (
-                <ul className="flex flex-col gap-1.5 text-sm">
-                  {orders.map((order) => (
-                    <li
-                      key={order.id}
-                      className="flex items-start justify-between gap-2 rounded-md bg-muted/40 px-3 py-2"
-                    >
-                      <span className="break-words">
-                        {ORDER_TYPE_LABELS[order.order_type]} · {order.stock.name} ·{' '}
-                        {formatNumber(order.executed_quantity || order.requested_quantity)}주
-                      </span>
-                      <div className="flex w-2/5 shrink-0 flex-col items-end gap-0.5 text-right">
-                        <span className="text-xs text-muted-foreground">
-                          {ORDER_STATUS_LABELS[order.status]}
-                        </span>
-                        {(order.status === 'failed' || order.status === 'skipped') &&
-                          order.failure_reason && (
-                            <span className="text-xs leading-tight break-words whitespace-normal text-muted-foreground/70">
-                              {order.failure_reason}
-                            </span>
-                          )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="flex flex-col gap-1.5">
+                    {orders.rows.map((order) => (
+                      <OrderRow key={order.id} order={order} showMonkey={false} />
+                    ))}
+                  </ul>
+                  {orders.pageCount > 1 ? (
+                    <Pagination
+                      page={orders.page}
+                      pageCount={orders.pageCount}
+                      pageSize={orders.pageSize}
+                      total={orders.total}
+                      onPageChange={orders.setPage}
+                      onPageSizeChange={orders.setPageSize}
+                    />
+                  ) : null}
+                </>
               )}
-            </div>
+            </Section>
           </>
         ) : null}
       </DialogContent>
