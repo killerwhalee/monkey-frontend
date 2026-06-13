@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAccountSummary } from '@/hooks/use-account-summary'
-import { formatCurrency, formatNumber, formatPercent, signColorClass } from '@/lib/format'
+import { formatCurrency, formatPercent, signColorClass } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 function SummaryStat({
@@ -60,10 +60,6 @@ export function AccountSummaryCard() {
               label="최고 수익률"
               value={formatPercent(data.best_earning_ratio)}
               valueClassName={signColorClass(data.best_earning_ratio)}
-            />
-            <SummaryStat
-              label="운영 중 원숭이"
-              value={`${formatNumber(data.active_monkey_count)} / ${formatNumber(data.monkey_count)}`}
             />
             <SummaryStat
               label="정리 대기 자산"

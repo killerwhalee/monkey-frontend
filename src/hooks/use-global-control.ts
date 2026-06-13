@@ -14,7 +14,7 @@ export function useGlobalControl() {
 export function useUpdateGlobalControl() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: Partial<Pick<GlobalMonkeyControl, 'enabled' | 'note'>>) =>
+    mutationFn: (payload: Partial<Pick<GlobalMonkeyControl, 'manual_enabled' | 'note'>>) =>
       api.patch<GlobalMonkeyControl>('/global-monkey-control/current/', payload),
     onSuccess: (data) => {
       queryClient.setQueryData(GLOBAL_CONTROL_KEY, data)
