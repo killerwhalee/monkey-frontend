@@ -47,6 +47,14 @@ export function formatDateTime(value: string): string {
   return dateTimeFormatter.format(new Date(value))
 }
 
+export function formatInterval(seconds: number): string {
+  const safe = Math.max(0, Math.round(seconds))
+  const minutes = Math.floor(safe / 60)
+  const remainder = safe % 60
+  if (minutes === 0) return `${remainder}초`
+  return `${minutes}분 ${remainder}초`
+}
+
 export function signColorClass(value: number): string {
   if (value > 0) return 'text-positive'
   if (value < 0) return 'text-destructive'

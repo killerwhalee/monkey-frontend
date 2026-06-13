@@ -11,6 +11,11 @@ export interface Holding {
   monkey_id: number
   stock: Stock
   quantity: number
+  average_price: number
+  current_price: number
+  evaluation: number
+  profit: number
+  profit_rate: number
 }
 
 export const ORDER_TYPE = {
@@ -83,6 +88,9 @@ export interface MonkeyBulkCreatePayload {
 export interface GlobalMonkeyControl {
   id: number
   enabled: boolean
+  time_enabled: boolean
+  holiday_enabled: boolean
+  manual_enabled: boolean
   kill_threshold: number
   note: string
   created_at: string
@@ -103,8 +111,13 @@ export interface DailyEarningRatioPoint {
   best_earning_ratio: number
 }
 
-export interface EarningRatioCandlestick {
-  date: string
+export const CANDLE_UNITS = ['1m', '15m', '1h', '4h', '1d'] as const
+
+export type CandleUnit = (typeof CANDLE_UNITS)[number]
+
+export interface Candlestick {
+  /** Bucket start as epoch seconds (lightweight-charts UTCTimestamp). */
+  time: number
   open: number
   high: number
   low: number
@@ -115,9 +128,15 @@ export interface DashboardSummary {
   active_monkey_count: number
   average_earning_ratio: number
   best_earning_ratio: number
+  total_initial_balance: number
+  total_cash_balance: number
+  total_holdings_value: number
+  total_equity: number
+  total_pl: number
+  earning_ratio: number
+  average_order_interval_seconds: number
   latest_orders: Order[]
   daily_earning_ratio_series: DailyEarningRatioPoint[]
-  candlestick_series: EarningRatioCandlestick[]
 }
 
 export interface AccountSummary {
