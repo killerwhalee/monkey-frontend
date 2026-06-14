@@ -13,19 +13,9 @@ const percentFormatter = new Intl.NumberFormat('ko-KR', {
   signDisplay: 'always',
 })
 
-const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-})
-
-const dateTimeFormatter = new Intl.DateTimeFormat('ko-KR', {
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+function pad(value: number): string {
+  return value.toString().padStart(2, '0')
+}
 
 export function formatCurrency(value: number): string {
   return currencyFormatter.format(value)
@@ -40,11 +30,13 @@ export function formatPercent(ratio: number): string {
 }
 
 export function formatDate(value: string): string {
-  return dateFormatter.format(new Date(value))
+  const date = new Date(value)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 export function formatDateTime(value: string): string {
-  return dateTimeFormatter.format(new Date(value))
+  const date = new Date(value)
+  return `${formatDate(value)} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 export function formatInterval(seconds: number): string {
