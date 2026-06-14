@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { FeedbackSubmitDialog } from '@/components/feedback/feedback-submit-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,7 @@ export function AppShell() {
           </NavLink>
           <nav className="flex items-center gap-1">
             <NavTab to="/">대시보드</NavTab>
+            <FeedbackSubmitDialog />
             {isAuthenticated && isAdmin ? (
               <>
                 <NavTab to="/manage">관리자</NavTab>
@@ -50,7 +52,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        Monkey Project · 무작위 트레이더 실험을 위한 모의투자 모니터링 대시보드
+        Monkey Project · Created by killerwhalee
       </footer>
     </div>
   )

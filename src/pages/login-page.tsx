@@ -22,7 +22,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (isAuthenticated && isAdmin) {
-    const from = (location.state as LocationState | null)?.from?.pathname ?? '/admin'
+    const from = (location.state as LocationState | null)?.from?.pathname ?? '/manage'
     return <Navigate to={from} replace />
   }
 
@@ -33,7 +33,7 @@ export function LoginPage() {
     try {
       const isAdminAccount = await login(username, password)
       if (isAdminAccount) {
-        const from = (location.state as LocationState | null)?.from?.pathname ?? '/admin'
+        const from = (location.state as LocationState | null)?.from?.pathname ?? '/manage'
         navigate(from, { replace: true })
       } else {
         setError('관리자 권한이 있는 계정만 로그인할 수 있습니다.')

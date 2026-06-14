@@ -162,3 +162,48 @@ export interface TokenRefreshResponse {
   access: string
   refresh?: string
 }
+
+export const FEEDBACK_CATEGORY = {
+  BUG: 'bug',
+  FEATURE: 'feature',
+  GENERAL: 'general',
+  OTHER: 'other',
+} as const
+
+export type FeedbackCategory = (typeof FEEDBACK_CATEGORY)[keyof typeof FEEDBACK_CATEGORY]
+
+export const FEEDBACK_CATEGORY_LABELS: Record<FeedbackCategory, string> = {
+  bug: '버그 신고',
+  feature: '기능 제안',
+  general: '일반 의견',
+  other: '기타',
+}
+
+export type FeedbackStatus = 'new' | 'answered'
+
+export interface Feedback {
+  id: number
+  email: string
+  category: FeedbackCategory
+  category_label: string
+  subject: string
+  message: string
+  status: FeedbackStatus
+  status_label: string
+  reply_message: string
+  replied_at: string | null
+  replied_by_username: string
+  created_at: string
+  updated_at: string
+}
+
+export interface FeedbackCreatePayload {
+  email: string
+  category: FeedbackCategory
+  subject: string
+  message: string
+}
+
+export interface FeedbackReplyPayload {
+  reply_message: string
+}

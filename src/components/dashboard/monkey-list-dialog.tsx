@@ -16,7 +16,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
@@ -110,7 +109,6 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
                       direction={controls.sortDir}
                       onToggle={controls.toggleSort}
                     />
-                    <TableHead className="text-right">상세</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -134,7 +132,7 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
                         {formatPercent(monkey.metrics.earning_ratio)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedMonkeyId(monkey.id)}>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedMonkeyId(monkey.id)}>
                           자세히
                         </Button>
                       </TableCell>

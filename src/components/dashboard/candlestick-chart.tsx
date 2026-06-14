@@ -53,6 +53,7 @@ export function CandlestickChart() {
         timeVisible: true,
         secondsVisible: false,
       },
+      localization: { dateFormat: 'yyyy-MM-dd' },
       crosshair: { mode: 0 },
     })
     const series = chart.addSeries(CandlestickSeries, {

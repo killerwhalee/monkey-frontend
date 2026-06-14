@@ -15,7 +15,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
@@ -70,14 +69,14 @@ export function MonkeyTable() {
   async function handleForceKill(monkey: Monkey) {
     const confirmed = await confirm({
       title: '원숭이 제거',
-      description: `'${monkey.name}' 원숭이를 제거할까요? 보유 종목은 장이 열려 있을 때 매도됩니다.`,
+      description: `'${monkey.name}' 원숭이를 제거할까요? 보유 종목은 즉시 매도를 시도하며, 장이 닫혀 있으면 매도되지 않을 수 있습니다.`,
       confirmLabel: '강제 종료',
       variant: 'destructive',
     })
     if (!confirmed) return
     forceKillMonkey.mutate(monkey.id, {
       onSuccess: () =>
-        toast.success(`'${monkey.name}' 원숭이 제거를 요청했습니다. 장이 열리면 보유 종목이 매도됩니다.`),
+        toast.success(`'${monkey.name}' 원숭이를 제거했습니다. 보유 종목 매도를 시도했습니다.`),
       onError: (error) => toast.error(getApiErrorDetail(error) ?? '원숭이 제거에 실패했습니다.'),
     })
   }
@@ -165,7 +164,6 @@ export function MonkeyTable() {
                     direction={controls.sortDir}
                     onToggle={controls.toggleSort}
                   />
-                  <TableHead className="text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
