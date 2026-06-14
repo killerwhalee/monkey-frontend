@@ -1,7 +1,7 @@
 import { AccountSummaryCard } from '@/components/admin/account-summary-card'
-import { KisTokenStatusCard } from '@/components/admin/kis-token-status-card'
-import { MonkeyTable } from '@/components/admin/monkey-table'
-import { TradingControlCard } from '@/components/admin/trading-control-card'
+import { KisTokenStatusCard } from '@/components/manage/kis-token-status-card'
+import { MonkeyTable } from '@/components/manage/monkey-table'
+import { TradingControlCard } from '@/components/manage/trading-control-card'
 
 export function ManagePage() {
   return (
