@@ -20,8 +20,8 @@ export function PerformanceChartCard({ dailySeries }: PerformanceChartCardProps)
       <CardContent>
         <Tabs defaultValue="line" className="gap-4">
           <TabsList>
-            <TabsTrigger value="line">수익률 추이</TabsTrigger>
-            <TabsTrigger value="candle">캔들</TabsTrigger>
+            <TabsTrigger value="line">수익률 그래프</TabsTrigger>
+            <TabsTrigger value="candle">수익률 차트</TabsTrigger>
           </TabsList>
           <TabsContent value="line">
             <EarningRatioChart data={dailySeries} />

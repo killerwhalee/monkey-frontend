@@ -4,7 +4,7 @@ import {
   TableCell,
   TableRow,
 } from '@/components/ui/table'
-import { formatCurrency, signColorClass } from '@/lib/format'
+import { formatCurrency, formatPercent, signColorClass } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface AssetsTableProps {
@@ -13,21 +13,24 @@ interface AssetsTableProps {
   holdingsValue: number
   totalEquity: number
   totalPl: number
+  earningRatio: number
 }
 
 export function AssetsTable({
-  initialBalance,
   cashBalance,
   holdingsValue,
   totalEquity,
+  initialBalance,
   totalPl,
+  earningRatio,
 }: AssetsTableProps) {
   const rows: { label: string; value: string; className?: string }[] = [
-    { label: '초기 자본금', value: formatCurrency(initialBalance) },
-    { label: '보유 현금', value: formatCurrency(cashBalance) },
-    { label: '보유 종목 평가액', value: formatCurrency(holdingsValue) },
-    { label: '현재 평가자산', value: formatCurrency(totalEquity) },
-    { label: '누적 손익', value: formatCurrency(totalPl), className: signColorClass(totalPl) },
+    { label: '① 보유 현금', value: formatCurrency(cashBalance) },
+    { label: '② 보유 종목 평가액', value: formatCurrency(holdingsValue) },
+    { label: '③ 현재 평가자산 (①+②)', value: formatCurrency(totalEquity) },
+    { label: '④ 초기 자본금', value: formatCurrency(initialBalance) },
+    { label: '⑤ 누적 손익 (③-④)', value: formatCurrency(totalPl), className: signColorClass(totalPl) },
+    { label: '수익률', value: formatPercent(earningRatio), className: signColorClass(earningRatio) },
   ]
 
   return (

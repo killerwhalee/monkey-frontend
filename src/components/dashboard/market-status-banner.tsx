@@ -4,6 +4,11 @@ import { cn } from '@/lib/utils';
 
 const MARKET_OPEN_MINUTES = 9 * 60;
 const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
+// The holiday-check task runs at 08:00 KST; before that today's holiday status
+// is unknown, so we don't promise a market-open countdown yet.
+const HOLIDAY_CHECK_MINUTES = 8 * 60;
+// Only surface the close countdown inside the final hour of the session.
+const CLOSE_COUNTDOWN_WINDOW_MINUTES = 60;
 
 function StatusDot({ active, label }: { active: boolean; label: string }) {
 	return (
@@ -17,43 +22,6 @@ function StatusDot({ active, label }: { active: boolean; label: string }) {
 			{label}
 		</span>
 	);
-}
-
-function getNextTransition(seoulDate: Date): {
-	label: string;
-	remainingMs: number;
-} {
-	const day = seoulDate.getDay();
-	const minutes = seoulDate.getHours() * 60 + seoulDate.getMinutes();
-	const isWeekday = day >= 1 && day <= 5;
-
-	const target = new Date(seoulDate);
-	target.setSeconds(0, 0);
-
-	if (isWeekday && minutes < MARKET_OPEN_MINUTES) {
-		target.setHours(9, 0, 0, 0);
-		return {
-			label: '거래 시작까지',
-			remainingMs: target.getTime() - seoulDate.getTime(),
-		};
-	}
-
-	if (isWeekday && minutes < MARKET_CLOSE_MINUTES) {
-		target.setHours(15, 30, 0, 0);
-		return {
-			label: '거래 중단까지',
-			remainingMs: target.getTime() - seoulDate.getTime(),
-		};
-	}
-
-	do {
-		target.setDate(target.getDate() + 1);
-	} while (target.getDay() === 0 || target.getDay() === 6);
-	target.setHours(9, 0, 0, 0);
-	return {
-		label: '거래 시작까지',
-		remainingMs: target.getTime() - seoulDate.getTime(),
-	};
 }
 
 function formatDuration(ms: number): string {
@@ -80,11 +48,14 @@ export function MarketStatusBanner() {
 	);
 	const day = seoulDate.getDay();
 	const minutes = seoulDate.getHours() * 60 + seoulDate.getMinutes();
+	const isWeekend = day === 0 || day === 6;
+	const isHoliday = isWeekend || control?.holiday_enabled === false;
 	const isMarketOpen =
-		day >= 1 &&
-		day <= 5 &&
+		!isHoliday &&
 		minutes >= MARKET_OPEN_MINUTES &&
 		minutes < MARKET_CLOSE_MINUTES;
+	// Holiday status is only certain after the daily checker runs on a weekday.
+	const holidayChecked = !isWeekend && minutes >= HOLIDAY_CHECK_MINUTES;
 
 	const timeString = new Intl.DateTimeFormat('ko-KR', {
 		timeZone: 'Asia/Seoul',
@@ -94,26 +65,37 @@ export function MarketStatusBanner() {
 		hour12: false,
 	}).format(now);
 
-	const { label: countdownLabel, remainingMs } = getNextTransition(seoulDate);
+	const marketLabel = isHoliday ? '휴장일' : isMarketOpen ? '장 중' : '장 마감';
+
+	let countdown: { label: string; remainingMs: number } | null = null;
+	if (!isHoliday && !isMarketOpen && minutes < MARKET_OPEN_MINUTES && holidayChecked) {
+		const target = new Date(seoulDate);
+		target.setHours(9, 0, 0, 0);
+		countdown = { label: '거래 시작까지', remainingMs: target.getTime() - seoulDate.getTime() };
+	} else if (
+		isMarketOpen &&
+		minutes >= MARKET_CLOSE_MINUTES - CLOSE_COUNTDOWN_WINDOW_MINUTES
+	) {
+		const target = new Date(seoulDate);
+		target.setHours(15, 30, 0, 0);
+		countdown = { label: '거래 중단까지', remainingMs: target.getTime() - seoulDate.getTime() };
+	}
 
 	return (
 		<div className="flex flex-col items-center gap-1 font-mono text-xs text-muted-foreground">
-			<div className="text-[20px] text-foreground">
-				{timeString} KST
-			</div>
+			<div className="text-[20px] text-foreground">{timeString} KST</div>
 			<div className="flex items-center gap-2">
-				<StatusDot
-					active={isMarketOpen}
-					label={isMarketOpen ? '장 중' : '장 마감'}
-				/>
+				<StatusDot active={isMarketOpen} label={marketLabel} />
 				<StatusDot
 					active={control?.enabled ?? false}
 					label={control?.enabled ? '거래 중' : '거래 중단'}
 				/>
 			</div>
-			<span className="text-[11px] text-muted-foreground/70">
-				{countdownLabel} {formatDuration(remainingMs)}
-			</span>
+			{countdown ? (
+				<span className="text-[11px] text-muted-foreground/70">
+					{countdown.label} {formatDuration(countdown.remainingMs)}
+				</span>
+			) : null}
 		</div>
 	);
 }

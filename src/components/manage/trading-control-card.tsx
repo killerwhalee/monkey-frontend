@@ -92,13 +92,13 @@ export function TradingControlCard() {
                 : 'border-destructive/30 bg-destructive/10 text-destructive',
             )}
           >
-            {data.enabled ? '거래 중' : '중단됨'}
+            {data.enabled ? '거래 활성화' : '거래 중단됨'}
           </Badge>
         </div>
 
         <GateRow
           title="시간 게이트"
-          description="09:00 개장 / 15:30 마감, 주기 작업으로 자동 제어됩니다."
+          description="평일 09:00 개장 / 15:30 마감, 주기 작업으로 자동 제어됩니다."
         >
           <GateBadge open={data.time_enabled} />
         </GateRow>
@@ -121,9 +121,7 @@ export function TradingControlCard() {
               disabled={updateControl.isPending}
               aria-label="수동 거래 스위치"
             />
-            <span className="text-sm text-muted-foreground">
-              {data.manual_enabled ? '켜짐' : '꺼짐'}
-            </span>
+            <GateBadge open={data.manual_enabled} />
           </div>
         </GateRow>
       </CardContent>

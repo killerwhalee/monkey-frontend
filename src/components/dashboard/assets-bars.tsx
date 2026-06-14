@@ -36,18 +36,24 @@ export function AssetsBars({ initialBalance, cashBalance, holdingsValue }: Asset
         </div>
         <div className="h-5 w-full overflow-hidden rounded-md bg-muted/40">
           <div className="flex h-full" style={{ width: `${currentWidth}%` }}>
-            <div className="h-full bg-primary/70" style={{ width: `${cashShare}%` }} />
-            <div className="h-full bg-positive/70" style={{ width: `${holdingsShare}%` }} />
+            <div
+              className="h-full bg-[var(--chart-1)]"
+              style={{ width: `${cashShare}%` }}
+            />
+            <div
+              className="h-full bg-[var(--chart-4)]"
+              style={{ width: `${holdingsShare}%` }}
+            />
           </div>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-2 rounded-full bg-primary/70" />
-            현금 {formatCurrency(cashBalance)}
+            <span className="inline-block size-2 rounded-full bg-[var(--chart-1)]" />
+            현금 {formatCurrency(cashBalance)} ({Math.round(cashShare)}%)
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-2 rounded-full bg-positive/70" />
-            보유 종목 {formatCurrency(holdingsValue)}
+            <span className="inline-block size-2 rounded-full bg-[var(--chart-4)]" />
+            보유 종목 {formatCurrency(holdingsValue)} ({Math.round(holdingsShare)}%)
           </span>
         </div>
       </div>

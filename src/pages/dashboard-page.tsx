@@ -1,20 +1,23 @@
-import { useState } from 'react'
-import { AssetsBars } from '@/components/dashboard/assets-bars'
-import { AssetsTable } from '@/components/dashboard/assets-table'
-import { MarketStatusBanner } from '@/components/dashboard/market-status-banner'
-import { MonkeyListDialog } from '@/components/dashboard/monkey-list-dialog'
-import { PerformanceChartCard } from '@/components/dashboard/performance-chart-card'
-import { ProjectIntroSection } from '@/components/dashboard/project-intro-section'
-import { RecentOrdersTable } from '@/components/dashboard/recent-orders-table'
-import { StatCard } from '@/components/dashboard/stat-card'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useDashboardSummary } from '@/hooks/use-dashboard-summary'
-import { formatCurrency, formatInterval, formatNumber, formatPercent, signColorClass } from '@/lib/format'
+import { useState } from 'react';
+import { MarketStatusBanner } from '@/components/dashboard/market-status-banner';
+import { MonkeyListDialog } from '@/components/dashboard/monkey-list-dialog';
+import { PerformanceChartCard } from '@/components/dashboard/performance-chart-card';
+import { ProjectIntroSection } from '@/components/dashboard/project-intro-section';
+import { RecentOrdersTable } from '@/components/dashboard/recent-orders-table';
+import { StatCard } from '@/components/dashboard/stat-card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
+import {
+  formatCurrency,
+  formatInterval,
+  formatNumber,
+  formatPercent,
+  signColorClass,
+} from '@/lib/format';
 
 export function DashboardPage() {
-  const { data, isPending, isError } = useDashboardSummary()
-  const [isMonkeyListOpen, setIsMonkeyListOpen] = useState(false)
+  const { data, isPending, isError } = useDashboardSummary();
+  const [isMonkeyListOpen, setIsMonkeyListOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,30 +38,6 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      {isPending || !data ? (
-        <Skeleton className="h-56 w-full" />
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>전체 자산 현황</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2">
-            <AssetsBars
-              initialBalance={data.total_initial_balance}
-              cashBalance={data.total_cash_balance}
-              holdingsValue={data.total_holdings_value}
-            />
-            <AssetsTable
-              initialBalance={data.total_initial_balance}
-              cashBalance={data.total_cash_balance}
-              holdingsValue={data.total_holdings_value}
-              totalEquity={data.total_equity}
-              totalPl={data.total_pl}
-            />
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isPending || !data ? (
           <>
@@ -75,6 +54,10 @@ export function DashboardPage() {
               onClick={() => setIsMonkeyListOpen(true)}
             />
             <StatCard
+              label="평균 주문 주기"
+              value={formatInterval(data.average_order_interval_seconds)}
+            />
+            <StatCard
               label="누적 수익"
               value={formatCurrency(data.total_pl)}
               valueClassName={signColorClass(data.total_pl)}
@@ -83,10 +66,6 @@ export function DashboardPage() {
               label="수익률"
               value={formatPercent(data.earning_ratio)}
               valueClassName={signColorClass(data.earning_ratio)}
-            />
-            <StatCard
-              label="평균 주문 주기"
-              value={formatInterval(data.average_order_interval_seconds)}
             />
           </>
         )}
@@ -106,7 +85,10 @@ export function DashboardPage() {
 
       <ProjectIntroSection />
 
-      <MonkeyListDialog open={isMonkeyListOpen} onOpenChange={setIsMonkeyListOpen} />
+      <MonkeyListDialog
+        open={isMonkeyListOpen}
+        onOpenChange={setIsMonkeyListOpen}
+      />
     </div>
-  )
+  );
 }

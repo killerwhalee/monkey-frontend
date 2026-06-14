@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
 
+import { AssetsCard } from '@/components/dashboard/assets-card'
 import { OrderRow } from '@/components/dashboard/recent-orders-table'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -37,23 +38,6 @@ interface MonkeyDetailDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   showAllOrders?: boolean
-}
-
-function DetailStat({
-  label,
-  value,
-  valueClassName,
-}: {
-  label: string
-  value: string
-  valueClassName?: string
-}) {
-  return (
-    <div className="rounded-lg bg-muted/40 p-3 ring-1 ring-foreground/5">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn('mt-1 font-mono text-sm font-medium tabular-nums', valueClassName)}>{value}</p>
-    </div>
-  )
 }
 
 function Section({
@@ -129,30 +113,25 @@ export function MonkeyDetailDialog({
             <DialogHeader>
               <DialogTitle>{monkey.name}</DialogTitle>
               <DialogDescription>
-                #{monkey.id} · {monkey.is_active ? '운영 중' : '중단됨'}
+                #{monkey.id} ·{' '}
+                {monkey.killed_at !== null
+                  ? '제거됨'
+                  : monkey.is_active
+                    ? '운영 중'
+                    : '중단됨'}{' '}
+                · 거래 주기{' '}
+                {formatInterval(monkey.order_interval_seconds)}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <DetailStat label="총 자산" value={formatCurrency(monkey.metrics.total_equity)} />
-              <DetailStat label="현금 잔고" value={formatCurrency(monkey.metrics.cash_balance)} />
-              <DetailStat
-                label="보유 종목 평가액"
-                value={formatCurrency(monkey.metrics.holdings_value)}
-              />
-              <DetailStat
-                label="누적 손익"
-                value={formatCurrency(monkey.metrics.total_pl)}
-                valueClassName={signColorClass(monkey.metrics.total_pl)}
-              />
-              <DetailStat
-                label="수익률"
-                value={formatPercent(monkey.metrics.earning_ratio)}
-                valueClassName={signColorClass(monkey.metrics.earning_ratio)}
-              />
-              <DetailStat label="초기 자본금" value={formatCurrency(monkey.initial_balance)} />
-              <DetailStat label="거래 주기" value={formatInterval(monkey.order_interval_seconds)} />
-            </div>
+            <AssetsCard
+              initialBalance={monkey.initial_balance}
+              cashBalance={monkey.metrics.cash_balance}
+              holdingsValue={monkey.metrics.holdings_value}
+              totalEquity={monkey.metrics.total_equity}
+              totalPl={monkey.metrics.total_pl}
+              earningRatio={monkey.metrics.earning_ratio}
+            />
 
             <Section
               title={`보유 종목 ${formatNumber(monkey.holdings.length)}종 · 총 ${formatNumber(totalShares)}주`}
