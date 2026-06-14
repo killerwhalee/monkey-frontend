@@ -21,6 +21,19 @@ export class ApiError extends Error {
   }
 }
 
+export function getApiErrorDetail(error: unknown): string | null {
+  if (
+    error instanceof ApiError &&
+    typeof error.data === 'object' &&
+    error.data !== null &&
+    'detail' in error.data &&
+    typeof (error.data as { detail?: unknown }).detail === 'string'
+  ) {
+    return (error.data as { detail: string }).detail
+  }
+  return null
+}
+
 let refreshPromise: Promise<string | null> | null = null
 
 async function refreshAccessToken(): Promise<string | null> {

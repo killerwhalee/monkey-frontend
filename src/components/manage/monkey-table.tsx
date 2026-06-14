@@ -22,6 +22,7 @@ import {
 import { useConfirm } from '@/hooks/use-confirm'
 import { useForceKillMonkey, useMonkeys, useUpdateMonkey } from '@/hooks/use-monkeys'
 import { useTableControls } from '@/hooks/use-table-controls'
+import { getApiErrorDetail } from '@/lib/api-client'
 import { formatCurrency, formatInterval, formatNumber, formatPercent, signColorClass } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Monkey } from '@/types/api'
@@ -33,9 +34,10 @@ export function MonkeyTable() {
   const confirm = useConfirm()
   const [selectedMonkeyId, setSelectedMonkeyId] = useState<number | null>(null)
   const selectedMonkey = monkeys?.find((monkey) => monkey.id === selectedMonkeyId) ?? null
+  const activeMonkeys = monkeys?.filter((monkey) => monkey.killed_at === null)
 
   const controls = useTableControls<Monkey>({
-    rows: monkeys ?? [],
+    rows: activeMonkeys ?? [],
     columns: {
       name: (monkey) => monkey.name,
       is_active: (monkey) => (monkey.is_active ? 1 : 0),
@@ -50,8 +52,8 @@ export function MonkeyTable() {
     initialPageSize: 10,
   })
 
-  const activeCount = monkeys?.filter((monkey) => monkey.is_active).length ?? 0
-  const totalCount = monkeys?.length ?? 0
+  const activeCount = activeMonkeys?.filter((monkey) => monkey.is_active).length ?? 0
+  const totalCount = activeMonkeys?.length ?? 0
 
   function handleToggleActive(monkey: Monkey, nextActive: boolean) {
     updateMonkey.mutate(
@@ -67,31 +69,38 @@ export function MonkeyTable() {
 
   async function handleForceKill(monkey: Monkey) {
     const confirmed = await confirm({
-      title: '원숭이 강제 종료',
-      description: `'${monkey.name}' 원숭이를 강제 종료하고 모든 보유 종목을 매도할까요?`,
+      title: '원숭이 제거',
+      description: `'${monkey.name}' 원숭이를 제거할까요? 보유 종목은 장이 열려 있을 때 매도됩니다.`,
       confirmLabel: '강제 종료',
       variant: 'destructive',
     })
     if (!confirmed) return
     forceKillMonkey.mutate(monkey.id, {
-      onSuccess: () => toast.success(`'${monkey.name}' 원숭이를 강제 종료했습니다.`),
-      onError: () => toast.error('강제 종료에 실패했습니다.'),
+      onSuccess: () =>
+        toast.success(`'${monkey.name}' 원숭이 제거를 요청했습니다. 장이 열리면 보유 종목이 매도됩니다.`),
+      onError: (error) => toast.error(getApiErrorDetail(error) ?? '원숭이 제거에 실패했습니다.'),
     })
   }
 
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle>원숭이 관리</CardTitle>
+          <CardDescription>
+            전체 {formatNumber(totalCount)}마리 중 {formatNumber(activeCount)}마리 운영 중
+          </CardDescription>
+        </div>
         <div className="flex shrink-0 gap-2">
           <MonkeyCreateDialog />
           <MonkeyAutoCreateDialog />
           <MonkeyBulkCreateDialog />
-        </div>
-        <div className="text-right">
-          <CardTitle>원숭이 관리</CardTitle>
-          <CardDescription>
-            운영 중 {formatNumber(activeCount)} / 전체 {formatNumber(totalCount)}마리
-          </CardDescription>
+          <Input
+            placeholder="원숭이 이름으로 검색"
+            value={controls.search}
+            onChange={(event) => controls.setSearch(event.target.value)}
+            className="sm:max-w-xs"
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -105,14 +114,8 @@ export function MonkeyTable() {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
-        ) : monkeys && monkeys.length > 0 ? (
+        ) : activeMonkeys && activeMonkeys.length > 0 ? (
           <div className="flex flex-col gap-3">
-            <Input
-              placeholder="이름으로 검색"
-              value={controls.search}
-              onChange={(event) => controls.setSearch(event.target.value)}
-              className="sm:max-w-xs"
-            />
             <Table>
               <TableHeader>
                 <TableRow>
@@ -212,9 +215,9 @@ export function MonkeyTable() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleForceKill(monkey)}
-                          disabled={!monkey.is_active || forceKillMonkey.isPending}
+                          disabled={forceKillMonkey.isPending}
                         >
-                          강제 종료
+                          원숭이 제거
                         </Button>
                       </div>
                     </TableCell>

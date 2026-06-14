@@ -35,9 +35,10 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
   const { data: monkeys, isPending, isError } = useMonkeys()
   const [selectedMonkeyId, setSelectedMonkeyId] = useState<number | null>(null)
   const selectedMonkey = monkeys?.find((monkey) => monkey.id === selectedMonkeyId) ?? null
+  const activeMonkeys = monkeys?.filter((monkey) => monkey.killed_at === null)
 
   const controls = useTableControls<Monkey>({
-    rows: monkeys ?? [],
+    rows: activeMonkeys ?? [],
     columns: {
       name: (monkey) => monkey.name,
       is_active: (monkey) => (monkey.is_active ? 1 : 0),
@@ -69,10 +70,10 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
             </div>
-          ) : monkeys && monkeys.length > 0 ? (
+          ) : activeMonkeys && activeMonkeys.length > 0 ? (
             <>
               <Input
-                placeholder="이름으로 검색"
+                placeholder="원숭이 이름으로 검색"
                 value={controls.search}
                 onChange={(event) => controls.setSearch(event.target.value)}
               />
