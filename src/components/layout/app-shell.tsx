@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 import { FeedbackSubmitDialog } from '@/components/feedback/feedback-submit-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
@@ -23,7 +22,7 @@ function NavTab({ to, children }: { to: string; children: ReactNode }) {
 }
 
 export function AppShell() {
-  const { isAuthenticated, isAdmin, logout } = useAuth()
+  const { isAuthenticated, isAdmin, isAdminChecked, logout } = useAuth()
 
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">
@@ -33,17 +32,14 @@ export function AppShell() {
             MONKEY
           </NavLink>
           <nav className="flex items-center gap-1">
-            <NavTab to="/">대시보드</NavTab>
-            <FeedbackSubmitDialog />
-            {isAuthenticated && isAdmin ? (
+            {/* Wait for the admin probe so admins never flash the feedback button. */}
+            {!isAdminChecked ? null : isAdmin ? (
               <>
+                <NavTab to="/">대시보드</NavTab>
                 <NavTab to="/manage">관리자</NavTab>
-                <Button variant="ghost" size="sm" onClick={logout}>
-                  로그아웃
-                </Button>
               </>
             ) : (
-              <NavTab to="/login">관리자 로그인</NavTab>
+              <FeedbackSubmitDialog />
             )}
           </nav>
         </div>
@@ -52,7 +48,25 @@ export function AppShell() {
         <Outlet />
       </main>
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        Monkey Project · Created by killerwhalee
+        <p>Monkey Project · Created by killerwhalee</p>
+        <p className="mt-1">
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={logout}
+              className="text-muted-foreground/50 transition-colors hover:text-foreground hover:underline"
+            >
+              로그아웃
+            </button>
+          ) : (
+            <NavLink
+              to="/login"
+              className="text-muted-foreground/50 transition-colors hover:text-foreground hover:underline"
+            >
+              관리자 로그인
+            </NavLink>
+          )}
+        </p>
       </footer>
     </div>
   )

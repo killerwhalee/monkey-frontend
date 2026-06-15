@@ -82,9 +82,7 @@ export function FeedbackSubmitDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          피드백 보내기
-        </Button>
+        <Button size="sm">피드백 보내기</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
