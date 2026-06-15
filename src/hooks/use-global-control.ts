@@ -11,10 +11,20 @@ export function useGlobalControl() {
   })
 }
 
+type GlobalControlEditableFields = Pick<
+  GlobalMonkeyControl,
+  | 'manual_enabled'
+  | 'note'
+  | 'kill_threshold'
+  | 'auto_create_starting_balance'
+  | 'auto_create_min_interval_seconds'
+  | 'auto_create_max_interval_seconds'
+>
+
 export function useUpdateGlobalControl() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: Partial<Pick<GlobalMonkeyControl, 'manual_enabled' | 'note'>>) =>
+    mutationFn: (payload: Partial<GlobalControlEditableFields>) =>
       api.patch<GlobalMonkeyControl>('/global-monkey-control/current/', payload),
     onSuccess: (data) => {
       queryClient.setQueryData(GLOBAL_CONTROL_KEY, data)

@@ -92,6 +92,9 @@ export interface GlobalMonkeyControl {
   holiday_enabled: boolean
   manual_enabled: boolean
   kill_threshold: number
+  auto_create_starting_balance: number
+  auto_create_min_interval_seconds: number
+  auto_create_max_interval_seconds: number
   note: string
   created_at: string
   updated_at: string
