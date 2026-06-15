@@ -108,6 +108,53 @@ export interface KisAccessToken {
   updated_at: string
 }
 
+export interface RunnableTask {
+  name: string
+  task: string
+  label: string
+  description: string
+  dangerous: boolean
+  warnings: string[]
+}
+
+export interface RunTaskResponse {
+  task: string
+  id: string
+}
+
+export interface TaskSchedule {
+  id: number
+  name: string
+  label: string
+  description: string
+  task: string
+  hour: number
+  minute: number
+  enabled: boolean
+}
+
+export interface UpdateSchedulePayload {
+  id: number
+  hour: number
+  minute: number
+}
+
+export interface IntervalSchedule {
+  id: number
+  name: string
+  label: string
+  description: string
+  task: string
+  every: number
+  period: string
+  enabled: boolean
+}
+
+export interface UpdateIntervalPayload {
+  id: number
+  every: number
+}
+
 export interface DailyEarningRatioPoint {
   date: string
   average_earning_ratio: number

@@ -67,13 +67,3 @@ export function useForceKillMonkey() {
     },
   })
 }
-
-export function useAutoCreateMonkeys() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: () => api.post<Monkey[]>('/monkeys/auto-create/', {}),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: MONKEYS_KEY })
-    },
-  })
-}

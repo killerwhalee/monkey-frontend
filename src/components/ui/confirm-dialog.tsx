@@ -11,6 +11,8 @@ import {
 export interface ConfirmOptions {
   title: string
   description?: string
+  // Optional bullet points rendered as an unordered list below the description.
+  details?: string[]
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'default' | 'destructive'
@@ -38,6 +40,13 @@ export function ConfirmDialog({ open, options, onConfirm, onCancel }: ConfirmDia
             <DialogDescription>{options.description}</DialogDescription>
           ) : null}
         </DialogHeader>
+        {options?.details && options.details.length > 0 ? (
+          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            {options.details.map((detail) => (
+              <li key={detail}>{detail}</li>
+            ))}
+          </ul>
+        ) : null}
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
             {options?.cancelLabel ?? '취소'}

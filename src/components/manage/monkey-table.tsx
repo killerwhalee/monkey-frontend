@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { MonkeyAutoCreateDialog } from '@/components/manage/monkey-auto-create-dialog'
 import { MonkeyBulkCreateDialog } from '@/components/manage/monkey-bulk-create-dialog'
 import { MonkeyCreateDialog } from '@/components/manage/monkey-create-dialog'
 import { MonkeyDetailDialog } from '@/components/monkey-detail-dialog'
@@ -92,7 +91,6 @@ export function MonkeyTable() {
         </div>
         <div className="flex shrink-0 gap-2">
           <MonkeyCreateDialog />
-          <MonkeyAutoCreateDialog />
           <MonkeyBulkCreateDialog />
           <Input
             placeholder="원숭이 이름으로 검색"

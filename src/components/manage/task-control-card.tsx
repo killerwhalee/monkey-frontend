@@ -1,0 +1,126 @@
+import { useState } from 'react'
+import { ChevronDownIcon, Loader2Icon, PlayIcon } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useConfirm } from '@/hooks/use-confirm'
+import { useRunnableTasks, useRunTask } from '@/hooks/use-tasks'
+import { getApiErrorDetail } from '@/lib/api-client'
+import { cn } from '@/lib/utils'
+import type { RunnableTask } from '@/types/api'
+
+function TaskRow({
+  task,
+  onRun,
+  isRunning,
+  disabled,
+}: {
+  task: RunnableTask
+  onRun: (task: RunnableTask) => void
+  isRunning: boolean
+  disabled: boolean
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-lg bg-muted/40 p-4 ring-1 ring-foreground/5">
+      <div className="min-w-0">
+        <p className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-sm font-medium">{task.label}</span>
+          <span className="font-mono text-xs text-muted-foreground">{task.task}</span>
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{task.description}</p>
+      </div>
+      <Button
+        size="sm"
+        variant={task.dangerous ? 'destructive' : 'outline'}
+        className="shrink-0"
+        disabled={disabled}
+        onClick={() => onRun(task)}
+      >
+        {isRunning ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+        실행
+      </Button>
+    </div>
+  )
+}
+
+export function TaskControlCard() {
+  const { data: tasks, isPending } = useRunnableTasks()
+  const runTask = useRunTask()
+  const confirm = useConfirm()
+  const [open, setOpen] = useState(false)
+
+  if (isPending || !tasks) {
+    return <Skeleton className="h-72 w-full" />
+  }
+
+  const dangerous = tasks.filter((task) => task.dangerous)
+  const safe = tasks.filter((task) => !task.dangerous)
+
+  async function handleRun(task: RunnableTask) {
+    if (task.dangerous) {
+      const confirmed = await confirm({
+        title: `'${task.label}' 실행`,
+        description: '이 작업을 실행하면 다음이 발생합니다:',
+        details: task.warnings,
+        confirmLabel: '실행',
+        variant: 'destructive',
+      })
+      if (!confirmed) return
+    }
+    runTask.mutate(task.name, {
+      onSuccess: () => toast.success(`'${task.label}' 작업을 실행 요청했습니다.`),
+      onError: (error) =>
+        toast.error(getApiErrorDetail(error) ?? `'${task.label}' 작업 실행에 실패했습니다.`),
+    })
+  }
+
+  const renderRow = (task: RunnableTask) => (
+    <TaskRow
+      key={task.name}
+      task={task}
+      onRun={handleRun}
+      isRunning={runTask.isPending && runTask.variables === task.name}
+      disabled={runTask.isPending}
+    />
+  )
+
+  return (
+    <Card>
+      <CardHeader>
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          aria-expanded={open}
+          className="flex w-full items-start justify-between gap-2 text-left"
+        >
+          <div>
+            <CardTitle>작업 실행</CardTitle>
+            <CardDescription>
+              Celery 백그라운드 작업을 수동으로 한 번 실행합니다. 위험 작업은 실행 전 확인을
+              거칩니다.
+            </CardDescription>
+          </div>
+          <ChevronDownIcon
+            className={cn(
+              'mt-1 size-4 shrink-0 text-muted-foreground transition-transform',
+              open && 'rotate-180',
+            )}
+          />
+        </button>
+      </CardHeader>
+      {open ? (
+        <CardContent className="flex flex-col gap-6">
+          <section className="flex flex-col gap-3">
+            <h3 className="text-sm font-semibold text-muted-foreground">일반 작업</h3>
+            {safe.map(renderRow)}
+          </section>
+          <section className="flex flex-col gap-3">
+            <h3 className="text-sm font-semibold text-destructive">위험 작업</h3>
+            {dangerous.map(renderRow)}
+          </section>
+        </CardContent>
+      ) : null}
+    </Card>
+  )
+}

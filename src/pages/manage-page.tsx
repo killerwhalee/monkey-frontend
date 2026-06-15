@@ -1,7 +1,11 @@
 import { AssetsCard } from '@/components/dashboard/assets-card'
 import { FeedbackTable } from '@/components/manage/feedback-table'
+import { IntervalScheduleCard } from '@/components/manage/interval-schedule-card'
 import { KisTokenStatusCard } from '@/components/manage/kis-token-status-card'
+import { MonkeyConfigCard } from '@/components/manage/monkey-config-card'
 import { MonkeyTable } from '@/components/manage/monkey-table'
+import { TaskControlCard } from '@/components/manage/task-control-card'
+import { TaskScheduleCard } from '@/components/manage/task-schedule-card'
 import { TradingControlCard } from '@/components/manage/trading-control-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -23,6 +27,7 @@ export function ManagePage() {
         <TabsList>
           <TabsTrigger value="overview">개요</TabsTrigger>
           <TabsTrigger value="monkeys">원숭이</TabsTrigger>
+          <TabsTrigger value="tasks">작업</TabsTrigger>
           <TabsTrigger value="kis">KIS</TabsTrigger>
           <TabsTrigger value="feedback">피드백</TabsTrigger>
         </TabsList>
@@ -42,8 +47,14 @@ export function ManagePage() {
           )}
           <TradingControlCard />
         </TabsContent>
-        <TabsContent value="monkeys">
+        <TabsContent value="monkeys" className="flex flex-col gap-6">
+          <MonkeyConfigCard />
           <MonkeyTable />
+        </TabsContent>
+        <TabsContent value="tasks" className="flex flex-col gap-6">
+          <TaskControlCard />
+          <TaskScheduleCard />
+          <IntervalScheduleCard />
         </TabsContent>
         <TabsContent value="kis">
           <KisTokenStatusCard />
