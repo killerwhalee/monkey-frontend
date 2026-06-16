@@ -1,9 +1,12 @@
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfigValue } from '@/components/ui/config-value'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useGlobalControl, useUpdateGlobalControl } from '@/hooks/use-global-control'
+import { useMarketHours } from '@/hooks/use-market-hours'
+import { formatHourMinute } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 function GateBadge({ open }: { open: boolean }) {
@@ -27,7 +30,7 @@ function GateRow({
   children,
 }: {
   title: string
-  description: string
+  description: React.ReactNode
   children: React.ReactNode
 }) {
   return (
@@ -43,11 +46,15 @@ function GateRow({
 
 export function TradingControlCard() {
   const { data, isPending } = useGlobalControl()
+  const { data: marketHours } = useMarketHours()
   const updateControl = useUpdateGlobalControl()
 
   if (isPending || !data) {
     return <Skeleton className="h-72 w-full" />
   }
+
+  const openTime = formatHourMinute(marketHours?.open, '09:00')
+  const closeTime = formatHourMinute(marketHours?.close, '15:30')
 
   function handleManualToggle(next: boolean) {
     updateControl.mutate(
@@ -98,7 +105,13 @@ export function TradingControlCard() {
 
         <GateRow
           title="시간 게이트"
-          description="평일 09:00 개장 / 15:30 마감, 주기 작업으로 자동 제어됩니다."
+          description={
+            <>
+              평일 <ConfigValue>{openTime}</ConfigValue> 개장 /{' '}
+              <ConfigValue>{closeTime}</ConfigValue> 마감, 주기 작업으로 자동
+              제어됩니다.
+            </>
+          }
         >
           <GateBadge open={data.time_enabled} />
         </GateRow>
