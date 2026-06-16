@@ -8,7 +8,6 @@ import { StatCard } from '@/components/dashboard/stat-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
 import {
-  formatCurrency,
   formatInterval,
   formatNumber,
   formatPercent,
@@ -58,14 +57,13 @@ export function DashboardPage() {
               value={formatInterval(data.average_order_interval_seconds)}
             />
             <StatCard
-              label="누적 수익"
-              value={formatCurrency(data.total_pl)}
-              valueClassName={signColorClass(data.total_pl)}
+              label="원숭이 지수"
+              value={formatNumber(Math.round(data.monkey_index))}
             />
             <StatCard
-              label="수익률"
-              value={formatPercent(data.earning_ratio)}
-              valueClassName={signColorClass(data.earning_ratio)}
+              label="전일 대비"
+              value={formatPercent(data.monkey_index_change)}
+              valueClassName={signColorClass(data.monkey_index_change)}
             />
           </>
         )}
@@ -74,7 +72,7 @@ export function DashboardPage() {
       {isPending || !data ? (
         <Skeleton className="h-96 w-full" />
       ) : (
-        <PerformanceChartCard dailySeries={data.daily_earning_ratio_series} />
+        <PerformanceChartCard />
       )}
 
       {isPending || !data ? (

@@ -22,9 +22,6 @@ const UNIT_LABELS: Record<CandleUnit, string> = {
   '1d': '1일',
 }
 
-// earning ratios are fractions (0.05 = 5%); show them as percentage points.
-const SCALE = 100
-
 export function CandlestickChart() {
   const [unit, setUnit] = useState<CandleUnit>('1d')
   const { data, isPending } = useCandlesticks(unit)
@@ -63,7 +60,7 @@ export function CandlestickChart() {
       borderDownColor: '#dc2626',
       wickUpColor: '#16a34a',
       wickDownColor: '#dc2626',
-      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+      priceFormat: { type: 'price', precision: 0, minMove: 1 },
     })
 
     chartRef.current = chart
@@ -82,10 +79,10 @@ export function CandlestickChart() {
     series.setData(
       data.map((candle) => ({
         time: candle.time as UTCTimestamp,
-        open: candle.open * SCALE,
-        high: candle.high * SCALE,
-        low: candle.low * SCALE,
-        close: candle.close * SCALE,
+        open: candle.open,
+        high: candle.high,
+        low: candle.low,
+        close: candle.close,
       })),
     )
     chartRef.current?.timeScale().fitContent()
@@ -107,7 +104,7 @@ export function CandlestickChart() {
           </Button>
         ))}
         <span className="ml-auto text-xs text-muted-foreground">
-          드래그·스크롤로 확대·이동할 수 있습니다 (단위: %)
+          드래그·스크롤로 확대·이동할 수 있습니다 (기준값: 10,000)
         </span>
       </div>
       <div className="relative h-80 w-full">

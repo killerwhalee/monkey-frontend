@@ -155,12 +155,6 @@ export interface UpdateIntervalPayload {
   every: number
 }
 
-export interface DailyEarningRatioPoint {
-  date: string
-  average_earning_ratio: number
-  best_earning_ratio: number
-}
-
 export const CANDLE_UNITS = ['1m', '15m', '1h', '4h', '1d'] as const
 
 export type CandleUnit = (typeof CANDLE_UNITS)[number]
@@ -176,31 +170,25 @@ export interface Candlestick {
 
 export interface DashboardSummary {
   active_monkey_count: number
-  average_earning_ratio: number
-  best_earning_ratio: number
-  total_initial_balance: number
-  total_cash_balance: number
-  total_holdings_value: number
-  total_equity: number
-  total_pl: number
-  earning_ratio: number
+  /** Current Monkey Index value (base 10,000). */
+  monkey_index: number
+  /** Today's opening index value (yesterday's close). */
+  monkey_index_open: number
+  /** Fractional change vs. today's open (0.05 = +5%). */
+  monkey_index_change: number
   average_order_interval_seconds: number
   latest_orders: Order[]
-  daily_earning_ratio_series: DailyEarningRatioPoint[]
 }
 
 export interface AccountSummary {
   kis_cash_balance: number
+  kis_holdings_value: number
+  kis_total_assets: number
+  kis_total_pl: number
+  kis_earning_rate: number
   unallocated_cash: number
   monkey_count: number
   active_monkey_count: number
-  total_monkey_balance: number
-  total_holdings_value: number
-  total_equity: number
-  average_earning_ratio: number
-  best_earning_ratio: number
-  system_balance: number
-  system_holdings_value: number
 }
 
 export interface TokenObtainResponse {
