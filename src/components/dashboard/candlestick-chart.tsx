@@ -104,7 +104,7 @@ export function CandlestickChart() {
           </Button>
         ))}
         <span className="ml-auto text-xs text-muted-foreground">
-          드래그·스크롤로 확대·이동할 수 있습니다 (기준값: 10,000)
+          드래그·스크롤로 확대·이동할 수 있습니다
         </span>
       </div>
       <div className="relative h-80 w-full">

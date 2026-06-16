@@ -47,16 +47,16 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
       return
     }
     if (!Number.isFinite(killPct)) {
-      setError('폐사 기준 수익률을 올바르게 입력해 주세요.')
+      setError('사망 기준 수익률을 올바르게 입력해 주세요.')
       return
     }
     if (
       !Number.isInteger(minInterval) ||
       !Number.isInteger(maxInterval) ||
       minInterval < 60 ||
-      maxInterval > 1800
+      maxInterval > 7200
     ) {
-      setError('거래 주기는 60~1800초 사이의 정수여야 합니다.')
+      setError('거래 주기는 60~7200초 사이의 정수여야 합니다.')
       return
     }
     if (maxInterval < minInterval) {
@@ -96,7 +96,7 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="config-kill-threshold">폐사 기준 수익률 (%)</Label>
+        <Label htmlFor="config-kill-threshold">사망 기준 수익률 (%)</Label>
         <Input
           id="config-kill-threshold"
           type="number"
@@ -106,7 +106,7 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
           required
         />
         <p className="text-xs text-muted-foreground">
-          수익률이 이 값 아래로 떨어진 원숭이는 자동으로 폐사 처리됩니다. (예: -50)
+          수익률이 이 값 아래로 떨어진 원숭이는 자동으로 사망 처리됩니다. (예: -50)
         </p>
       </div>
 
@@ -117,7 +117,7 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
             aria-label="최소 거래 주기"
             type="number"
             min={60}
-            max={1800}
+            max={7200}
             value={form.min_interval}
             onChange={(event) => update('min_interval', event.target.value)}
             required
@@ -127,14 +127,14 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
             aria-label="최대 거래 주기"
             type="number"
             min={60}
-            max={1800}
+            max={7200}
             value={form.max_interval}
             onChange={(event) => update('max_interval', event.target.value)}
             required
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          새 원숭이의 주문 주기는 이 범위(60~1800초) 안에서 무작위로 정해집니다.
+          새 원숭이의 주문 주기는 이 범위(60~7200초) 안에서 무작위로 정해집니다.
         </p>
       </div>
 

@@ -58,7 +58,7 @@ export function MonkeyTable() {
       { id: monkey.id, is_active: nextActive },
       {
         onSuccess: () => {
-          toast.success(`'${monkey.name}'을(를) ${nextActive ? '활성화' : '비활성화'}했습니다.`)
+          toast.success(`'${monkey.name}'의 운영을 ${nextActive ? '재개' : '중단'}했습니다.`)
         },
         onError: () => toast.error('상태 변경에 실패했습니다.'),
       },
@@ -67,16 +67,16 @@ export function MonkeyTable() {
 
   async function handleForceKill(monkey: Monkey) {
     const confirmed = await confirm({
-      title: '원숭이 제거',
-      description: `'${monkey.name}' 원숭이를 제거할까요? 보유 종목은 즉시 매도를 시도하며, 장이 닫혀 있으면 매도되지 않을 수 있습니다.`,
-      confirmLabel: '강제 종료',
+      title: '원숭이 처분',
+      description: `'${monkey.name}' 원숭이를 처분할까요? 보유 종목은 즉시 매도를 시도하며, 장이 닫혀 있으면 매도되지 않을 수 있습니다.`,
+      confirmLabel: '처분',
       variant: 'destructive',
     })
     if (!confirmed) return
     forceKillMonkey.mutate(monkey.id, {
       onSuccess: () =>
-        toast.success(`'${monkey.name}' 원숭이를 제거했습니다. 보유 종목 매도를 시도했습니다.`),
-      onError: (error) => toast.error(getApiErrorDetail(error) ?? '원숭이 제거에 실패했습니다.'),
+        toast.success(`'${monkey.name}' 원숭이를 처분했습니다. 보유 종목 매도를 시도했습니다.`),
+      onError: (error) => toast.error(getApiErrorDetail(error) ?? '원숭이 처분에 실패했습니다.'),
     })
   }
 
@@ -213,7 +213,7 @@ export function MonkeyTable() {
                           onClick={() => handleForceKill(monkey)}
                           disabled={forceKillMonkey.isPending}
                         >
-                          원숭이 제거
+                          원숭이 처분
                         </Button>
                       </div>
                     </TableCell>

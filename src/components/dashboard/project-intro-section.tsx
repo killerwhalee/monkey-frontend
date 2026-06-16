@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfigValue } from '@/components/ui/config-value';
 import {
 	Table,
 	TableBody,
@@ -7,8 +8,38 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { useGlobalControl } from '@/hooks/use-global-control';
+import { useMarketHours } from '@/hooks/use-market-hours';
+import {
+	formatCurrency,
+	formatHourMinute,
+	formatIntervalCompact,
+	formatPercent,
+} from '@/lib/format';
 
 export function ProjectIntroSection() {
+	const { data: control } = useGlobalControl();
+	const { data: marketHours } = useMarketHours();
+
+	// Fall back to the current defaults until the live config loads, so the copy
+	// stays stable and correct in the common case and updates if config differs.
+	const startingBalance = control?.auto_create_starting_balance ?? 1_000_000;
+	const minInterval = control?.auto_create_min_interval_seconds ?? 60;
+	const maxInterval = control?.auto_create_max_interval_seconds ?? 1800;
+	const killThreshold = control?.kill_threshold ?? -0.5;
+	const openTime = formatHourMinute(marketHours?.open, '09:00');
+	const closeTime = formatHourMinute(marketHours?.close, '15:30');
+
+	const startingBalanceChip = (
+		<ConfigValue>{formatCurrency(startingBalance)}</ConfigValue>
+	);
+	const intervalRangeChips = (
+		<>
+			<ConfigValue>{formatIntervalCompact(minInterval)}</ConfigValue>~
+			<ConfigValue>{formatIntervalCompact(maxInterval)}</ConfigValue>
+		</>
+	);
+
 	return (
 		<Card>
 			<CardHeader>
@@ -100,8 +131,8 @@ export function ProjectIntroSection() {
 								<TableBody>
 									<TableRow>
 										<TableCell>초기 자본</TableCell>
-										<TableCell className="text-right font-mono tabular-nums">
-											1,000,000원
+										<TableCell className="text-right">
+											{startingBalanceChip}
 										</TableCell>
 									</TableRow>
 									<TableRow>
@@ -112,8 +143,8 @@ export function ProjectIntroSection() {
 									</TableRow>
 									<TableRow>
 										<TableCell>거래 주기</TableCell>
-										<TableCell className="text-right font-mono tabular-nums">
-											원숭이마다 1분~30분 사이로 무작위 설정
+										<TableCell className="text-right">
+											원숭이마다 {intervalRangeChips} 사이로 무작위 설정
 										</TableCell>
 									</TableRow>
 								</TableBody>
@@ -126,14 +157,14 @@ export function ProjectIntroSection() {
 						</p>
 						<p className="mt-3">
 							<span className="font-medium text-foreground">
-								Q. 100만 원은 어디서 났나요?
+								Q. 시작 자본금은 어디서 났나요?
 							</span>
 							<br />
 							제 돈이 아닙니다. 모의투자 계좌입니다..5억까지밖에 안 되더라고요.
 							<br />
 							시스템이 실제 모의투자 계좌의 예수금을 주기적으로 확인하여, 아직
-							할당되지 않은 현금이 100만 원 이상 남아 있으면 새 원숭이를 자동으로
-							생성합니다.
+							할당되지 않은 현금이 {startingBalanceChip} 이상 남아 있으면 새
+							원숭이를 자동으로 생성합니다.
 							<br />
 							매일 자동으로 한 번씩 확인하며, 관리자가 직접 버튼을
 							눌러 즉시 확인할 수도 있습니다.
@@ -154,16 +185,19 @@ export function ProjectIntroSection() {
 						<ul className="mt-2 list-disc space-y-1 pl-5">
 							<li>
 								<span className="font-medium text-foreground">장 시작</span> —
-								주식 시장이 개장하면 깨어납니다.
+								주식 시장이 개장하면(<ConfigValue>{openTime}</ConfigValue>)
+								깨어납니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">거래</span> —
-								원숭이마다 정해진 주기(1분~30분)마다 한 번씩 매수 또는 매도 중
-								하나를 행동합니다. 어떤 버튼을 누를지는 원숭이 자신도 모릅니다.
+								원숭이마다 정해진 주기({intervalRangeChips})마다 한 번씩 매수
+								또는 매도 중 하나를 행동합니다. 어떤 버튼을 누를지는 원숭이
+								자신도 모릅니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">장 종료</span> —
-								시장이 폐장하면 활동을 중단하고, 다음 거래일까지 기다립니다.
+								시장이 폐장하면(<ConfigValue>{closeTime}</ConfigValue>) 활동을
+								중단하고, 다음 거래일까지 기다립니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">휴장일</span> —
@@ -193,10 +227,11 @@ export function ProjectIntroSection() {
 							</li>
 							<li>
 								<span className="font-medium text-foreground">☠️ 사망</span> —
-								전체 평가자산이 초기 자본의 일정 비율 이하로 떨어진 원숭이는 시장에서
-								퇴출됩니다. 도태는 장이 열려 있는 동안에는 진행하지 않고, 매일 장
-								시작 전에 한 번만 일괄 처리합니다. (원숭이 지수가 거래 성과만
-								반영하도록, 장중에는 원숭이 수가 바뀌지 않습니다.)
+								수익률이 <ConfigValue>{formatPercent(killThreshold)}</ConfigValue>{' '}
+								미만으로 떨어진 원숭이는 시장에서 퇴출됩니다. 사망 처리는 장이
+								열려 있는 동안에는 진행하지 않고, 매일 장 시작 전에 한 번만 일괄
+								처리합니다. (원숭이 지수가 거래 성과만 반영하도록, 장중에는 원숭이
+								수가 바뀌지 않습니다.)
 							</li>
 						</ul>
 						<p className="mt-2">

@@ -1,40 +1,72 @@
 import { useState } from 'react'
 import { ChevronDownIcon, Loader2Icon, PlayIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useConfirm } from '@/hooks/use-confirm'
+import { useGlobalControl } from '@/hooks/use-global-control'
 import { useRunnableTasks, useRunTask } from '@/hooks/use-tasks'
 import { getApiErrorDetail } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import type { RunnableTask } from '@/types/api'
+
+function whenLabel(when: RunnableTask['when']) {
+  if (when === 'market_open') return '장중 전용'
+  if (when === 'market_closed') return '장 마감 후 전용'
+  return null
+}
+
+function isBlocked(when: RunnableTask['when'], marketOpen: boolean) {
+  if (when === 'market_open') return !marketOpen
+  if (when === 'market_closed') return marketOpen
+  return false
+}
 
 function TaskRow({
   task,
   onRun,
   isRunning,
   disabled,
+  marketOpen,
 }: {
   task: RunnableTask
   onRun: (task: RunnableTask) => void
   isRunning: boolean
   disabled: boolean
+  marketOpen: boolean
 }) {
+  const blocked = isBlocked(task.when, marketOpen)
+  const label = whenLabel(task.when)
+
   return (
     <div className="flex items-start justify-between gap-3 rounded-lg bg-muted/40 p-4 ring-1 ring-foreground/5">
       <div className="min-w-0">
         <p className="flex flex-wrap items-baseline gap-x-2">
           <span className="text-sm font-medium">{task.label}</span>
           <span className="font-mono text-xs text-muted-foreground">{task.task}</span>
+          {label && (
+            <Badge
+              variant={blocked ? 'destructive' : 'secondary'}
+              className="text-xs"
+            >
+              {label}
+            </Badge>
+          )}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">{task.description}</p>
+        {blocked && (
+          <p className="mt-1 text-xs text-destructive">
+            {task.when === 'market_open' ? '장이 열려 있을 때만 실행할 수 있습니다.' : '장이 닫혀 있을 때만 실행할 수 있습니다.'}
+          </p>
+        )}
       </div>
       <Button
         size="sm"
         variant={task.dangerous ? 'destructive' : 'outline'}
         className="shrink-0"
-        disabled={disabled}
+        disabled={disabled || blocked}
         onClick={() => onRun(task)}
       >
         {isRunning ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
@@ -45,15 +77,17 @@ function TaskRow({
 }
 
 export function TaskControlCard() {
-  const { data: tasks, isPending } = useRunnableTasks()
+  const { data: tasks, isPending: tasksPending } = useRunnableTasks()
+  const { data: control, isPending: controlPending } = useGlobalControl()
   const runTask = useRunTask()
   const confirm = useConfirm()
   const [open, setOpen] = useState(false)
 
-  if (isPending || !tasks) {
+  if (tasksPending || controlPending || !tasks || !control) {
     return <Skeleton className="h-72 w-full" />
   }
 
+  const marketOpen = control.market_open
   const dangerous = tasks.filter((task) => task.dangerous)
   const safe = tasks.filter((task) => !task.dangerous)
 
@@ -82,6 +116,7 @@ export function TaskControlCard() {
       onRun={handleRun}
       isRunning={runTask.isPending && runTask.variables === task.name}
       disabled={runTask.isPending}
+      marketOpen={marketOpen}
     />
   )
 

@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useGlobalControl } from '@/hooks/use-global-control';
+import { useMarketHours } from '@/hooks/use-market-hours';
 import { cn } from '@/lib/utils';
 
-const MARKET_OPEN_MINUTES = 9 * 60;
-const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
-// The holiday-check task runs at 08:00 KST; before that today's holiday status
-// is unknown, so we don't promise a market-open countdown yet.
-const HOLIDAY_CHECK_MINUTES = 8 * 60;
+// Defaults until the live schedule loads (09:00 open / 15:30 close / 08:00 check).
+const DEFAULT_OPEN_MINUTES = 9 * 60;
+const DEFAULT_CLOSE_MINUTES = 15 * 60 + 30;
+const DEFAULT_HOLIDAY_CHECK_MINUTES = 8 * 60;
 // Only surface the close countdown inside the final hour of the session.
 const CLOSE_COUNTDOWN_WINDOW_MINUTES = 60;
+
+function toMinutes(
+	value: { hour: number | null; minute: number | null } | undefined,
+	fallback: number,
+): number {
+	if (!value || value.hour === null || value.minute === null) return fallback;
+	return value.hour * 60 + value.minute;
+}
 
 function StatusDot({ active, label }: { active: boolean; label: string }) {
 	return (
@@ -37,11 +45,19 @@ function formatDuration(ms: number): string {
 export function MarketStatusBanner() {
 	const [now, setNow] = useState(() => new Date());
 	const { data: control } = useGlobalControl();
+	const { data: marketHours } = useMarketHours();
 
 	useEffect(() => {
 		const id = setInterval(() => setNow(new Date()), 1000);
 		return () => clearInterval(id);
 	}, []);
+
+	const openMinutes = toMinutes(marketHours?.open, DEFAULT_OPEN_MINUTES);
+	const closeMinutes = toMinutes(marketHours?.close, DEFAULT_CLOSE_MINUTES);
+	const holidayCheckMinutes = toMinutes(
+		marketHours?.holiday_check,
+		DEFAULT_HOLIDAY_CHECK_MINUTES,
+	);
 
 	const seoulDate = new Date(
 		now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }),
@@ -51,11 +67,9 @@ export function MarketStatusBanner() {
 	const isWeekend = day === 0 || day === 6;
 	const isHoliday = isWeekend || control?.holiday_enabled === false;
 	const isMarketOpen =
-		!isHoliday &&
-		minutes >= MARKET_OPEN_MINUTES &&
-		minutes < MARKET_CLOSE_MINUTES;
+		!isHoliday && minutes >= openMinutes && minutes < closeMinutes;
 	// Holiday status is only certain after the daily checker runs on a weekday.
-	const holidayChecked = !isWeekend && minutes >= HOLIDAY_CHECK_MINUTES;
+	const holidayChecked = !isWeekend && minutes >= holidayCheckMinutes;
 
 	const timeString = new Intl.DateTimeFormat('ko-KR', {
 		timeZone: 'Asia/Seoul',
@@ -68,16 +82,16 @@ export function MarketStatusBanner() {
 	const marketLabel = isHoliday ? '휴장일' : isMarketOpen ? '장 중' : '장 마감';
 
 	let countdown: { label: string; remainingMs: number } | null = null;
-	if (!isHoliday && !isMarketOpen && minutes < MARKET_OPEN_MINUTES && holidayChecked) {
+	if (!isHoliday && !isMarketOpen && minutes < openMinutes && holidayChecked) {
 		const target = new Date(seoulDate);
-		target.setHours(9, 0, 0, 0);
+		target.setHours(Math.floor(openMinutes / 60), openMinutes % 60, 0, 0);
 		countdown = { label: '거래 시작까지', remainingMs: target.getTime() - seoulDate.getTime() };
 	} else if (
 		isMarketOpen &&
-		minutes >= MARKET_CLOSE_MINUTES - CLOSE_COUNTDOWN_WINDOW_MINUTES
+		minutes >= closeMinutes - CLOSE_COUNTDOWN_WINDOW_MINUTES
 	) {
 		const target = new Date(seoulDate);
-		target.setHours(15, 30, 0, 0);
+		target.setHours(Math.floor(closeMinutes / 60), closeMinutes % 60, 0, 0);
 		countdown = { label: '거래 중단까지', remainingMs: target.getTime() - seoulDate.getTime() };
 	}
 
