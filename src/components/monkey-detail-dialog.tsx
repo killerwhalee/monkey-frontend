@@ -115,7 +115,7 @@ export function MonkeyDetailDialog({
               <DialogDescription>
                 #{monkey.id} ·{' '}
                 {monkey.killed_at !== null
-                  ? '제거됨'
+                  ? '처분됨'
                   : monkey.is_active
                     ? '운영 중'
                     : '중단됨'}{' '}

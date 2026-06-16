@@ -52,9 +52,9 @@ export function MonkeyCreateDialog() {
     if (
       !Number.isInteger(orderIntervalSeconds) ||
       orderIntervalSeconds < 60 ||
-      orderIntervalSeconds > 1800
+      orderIntervalSeconds > 7200
     ) {
-      setError('거래 주기는 60~1800 사이의 정수(초)여야 합니다.')
+      setError('거래 주기는 60~7200 사이의 정수(초)여야 합니다.')
       return
     }
 
@@ -115,7 +115,7 @@ export function MonkeyCreateDialog() {
               id="monkey-order-interval"
               type="number"
               min={60}
-              max={1800}
+              max={7200}
               value={form.order_interval_seconds}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, order_interval_seconds: event.target.value }))
