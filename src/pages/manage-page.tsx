@@ -7,12 +7,11 @@ import { MonkeyTable } from '@/components/manage/monkey-table'
 import { TaskControlCard } from '@/components/manage/task-control-card'
 import { TaskScheduleCard } from '@/components/manage/task-schedule-card'
 import { TradingControlCard } from '@/components/manage/trading-control-card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAccountSummary } from '@/hooks/use-account-summary'
 
 export function ManagePage() {
-  const { data, isPending } = useAccountSummary()
+  const { data } = useAccountSummary()
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,11 +31,7 @@ export function ManagePage() {
           <TabsTrigger value="feedback">피드백</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="flex flex-col gap-6">
-          {isPending || !data ? (
-            <Skeleton className="h-56 w-full" />
-          ) : (
-            <KisAssetsCard title="전체 자산 현황" data={data} />
-          )}
+          <KisAssetsCard title="전체 자산 현황" data={data} />
           <TradingControlCard />
         </TabsContent>
         <TabsContent value="monkeys" className="flex flex-col gap-6">
