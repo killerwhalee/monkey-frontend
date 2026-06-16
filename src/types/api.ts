@@ -87,6 +87,7 @@ export interface MonkeyBulkCreatePayload {
 
 export interface GlobalMonkeyControl {
   id: number
+  market_open: boolean
   enabled: boolean
   time_enabled: boolean
   holiday_enabled: boolean
@@ -98,6 +99,17 @@ export interface GlobalMonkeyControl {
   note: string
   created_at: string
   updated_at: string
+}
+
+export interface HourMinute {
+  hour: number | null
+  minute: number | null
+}
+
+export interface MarketHours {
+  open: HourMinute
+  close: HourMinute
+  holiday_check: HourMinute
 }
 
 export interface KisAccessToken {
@@ -115,6 +127,7 @@ export interface RunnableTask {
   description: string
   dangerous: boolean
   warnings: string[]
+  when: 'market_open' | 'market_closed' | null
 }
 
 export interface RunTaskResponse {
