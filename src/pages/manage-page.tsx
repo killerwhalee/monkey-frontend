@@ -1,6 +1,6 @@
-import { AssetsCard } from '@/components/dashboard/assets-card'
 import { FeedbackTable } from '@/components/manage/feedback-table'
 import { IntervalScheduleCard } from '@/components/manage/interval-schedule-card'
+import { KisAssetsCard } from '@/components/manage/kis-assets-card'
 import { KisTokenStatusCard } from '@/components/manage/kis-token-status-card'
 import { MonkeyConfigCard } from '@/components/manage/monkey-config-card'
 import { MonkeyTable } from '@/components/manage/monkey-table'
@@ -9,10 +9,10 @@ import { TaskScheduleCard } from '@/components/manage/task-schedule-card'
 import { TradingControlCard } from '@/components/manage/trading-control-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useDashboardSummary } from '@/hooks/use-dashboard-summary'
+import { useAccountSummary } from '@/hooks/use-account-summary'
 
 export function ManagePage() {
-  const { data, isPending } = useDashboardSummary()
+  const { data, isPending } = useAccountSummary()
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,15 +35,7 @@ export function ManagePage() {
           {isPending || !data ? (
             <Skeleton className="h-56 w-full" />
           ) : (
-            <AssetsCard
-              title="전체 자산 현황"
-              initialBalance={data.total_initial_balance}
-              cashBalance={data.total_cash_balance}
-              holdingsValue={data.total_holdings_value}
-              totalEquity={data.total_equity}
-              totalPl={data.total_pl}
-              earningRatio={data.earning_ratio}
-            />
+            <KisAssetsCard title="전체 자산 현황" data={data} />
           )}
           <TradingControlCard />
         </TabsContent>
