@@ -34,7 +34,11 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
   const { data: monkeys, isPending, isError } = useMonkeys()
   const [selectedMonkeyId, setSelectedMonkeyId] = useState<number | null>(null)
   const selectedMonkey = monkeys?.find((monkey) => monkey.id === selectedMonkeyId) ?? null
-  const activeMonkeys = monkeys?.filter((monkey) => monkey.killed_at === null)
+  // The system monkey may be present when an admin is logged in (shared
+  // /monkeys/ cache); the public list never shows it.
+  const activeMonkeys = monkeys?.filter(
+    (monkey) => monkey.killed_at === null && !monkey.is_system,
+  )
 
   const controls = useTableControls<Monkey>({
     rows: activeMonkeys ?? [],

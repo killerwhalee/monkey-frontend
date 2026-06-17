@@ -64,6 +64,7 @@ export interface Monkey {
   id: number
   name: string
   is_active: boolean
+  is_system: boolean
   balance: number
   initial_balance: number
   order_interval_seconds: number
