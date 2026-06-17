@@ -32,7 +32,13 @@ export function MonkeyTable() {
   const confirm = useConfirm()
   const [selectedMonkeyId, setSelectedMonkeyId] = useState<number | null>(null)
   const selectedMonkey = monkeys?.find((monkey) => monkey.id === selectedMonkeyId) ?? null
-  const activeMonkeys = monkeys?.filter((monkey) => monkey.killed_at === null)
+  // The system monkey (orphan-liquidation account) is shown to admins as a
+  // read-only pinned row, separate from the sorted/paginated trader list.
+  const systemMonkey =
+    monkeys?.find((monkey) => monkey.is_system && monkey.killed_at === null) ?? null
+  const activeMonkeys = monkeys?.filter(
+    (monkey) => monkey.killed_at === null && !monkey.is_system,
+  )
 
   const controls = useTableControls<Monkey>({
     rows: activeMonkeys ?? [],
@@ -80,6 +86,73 @@ export function MonkeyTable() {
     })
   }
 
+  function renderRow(monkey: Monkey) {
+    const isSystem = monkey.is_system
+    return (
+      <TableRow key={monkey.id}>
+        <TableCell className="font-medium">
+          {monkey.name}
+          {isSystem ? (
+            <span className="ml-2 rounded bg-muted px-1.5 py-0.5 align-middle text-xs text-muted-foreground">
+              시스템
+            </span>
+          ) : null}
+        </TableCell>
+        <TableCell>
+          {isSystem ? (
+            <span className="text-sm text-muted-foreground">상시</span>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={monkey.is_active}
+                onCheckedChange={(next) => handleToggleActive(monkey, next)}
+                disabled={updateMonkey.isPending}
+                aria-label={`${monkey.name} 운영 상태`}
+              />
+              <span className="text-sm text-muted-foreground">
+                {monkey.is_active ? '운영 중' : '중단됨'}
+              </span>
+            </div>
+          )}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums">
+          {isSystem ? '—' : formatInterval(monkey.order_interval_seconds)}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums">
+          {formatCurrency(monkey.metrics.total_equity)}
+        </TableCell>
+        <TableCell
+          className={cn(
+            'text-right font-mono tabular-nums',
+            signColorClass(monkey.metrics.earning_ratio),
+          )}
+        >
+          {isSystem ? '—' : formatPercent(monkey.metrics.earning_ratio)}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums">
+          {monkey.holdings.length}
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setSelectedMonkeyId(monkey.id)}>
+              자세히
+            </Button>
+            {isSystem ? null : (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleForceKill(monkey)}
+                disabled={forceKillMonkey.isPending}
+              >
+                원숭이 처분
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    )
+  }
+
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
@@ -111,7 +184,7 @@ export function MonkeyTable() {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
-        ) : activeMonkeys && activeMonkeys.length > 0 ? (
+        ) : (activeMonkeys && activeMonkeys.length > 0) || systemMonkey ? (
           <div className="flex flex-col gap-3">
             <Table>
               <TableHeader>
@@ -165,60 +238,8 @@ export function MonkeyTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {controls.rows.map((monkey) => (
-                  <TableRow key={monkey.id}>
-                    <TableCell className="font-medium">{monkey.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={monkey.is_active}
-                          onCheckedChange={(next) => handleToggleActive(monkey, next)}
-                          disabled={updateMonkey.isPending}
-                          aria-label={`${monkey.name} 운영 상태`}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {monkey.is_active ? '운영 중' : '중단됨'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {formatInterval(monkey.order_interval_seconds)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {formatCurrency(monkey.metrics.total_equity)}
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        'text-right font-mono tabular-nums',
-                        signColorClass(monkey.metrics.earning_ratio),
-                      )}
-                    >
-                      {formatPercent(monkey.metrics.earning_ratio)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {monkey.holdings.length}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedMonkeyId(monkey.id)}
-                        >
-                          자세히
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleForceKill(monkey)}
-                          disabled={forceKillMonkey.isPending}
-                        >
-                          원숭이 처분
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {systemMonkey ? renderRow(systemMonkey) : null}
+                {controls.rows.map((monkey) => renderRow(monkey))}
               </TableBody>
             </Table>
             <Pagination
