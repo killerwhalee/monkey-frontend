@@ -1,22 +1,40 @@
 import { useState } from 'react';
 import { MarketStatusBanner } from '@/components/dashboard/market-status-banner';
+import { IndexReturnsDialog } from '@/components/dashboard/index-returns-dialog';
 import { MonkeyListDialog } from '@/components/dashboard/monkey-list-dialog';
 import { PerformanceChartCard } from '@/components/dashboard/performance-chart-card';
 import { ProjectIntroSection } from '@/components/dashboard/project-intro-section';
 import { RecentOrdersTable } from '@/components/dashboard/recent-orders-table';
 import { StatCard } from '@/components/dashboard/stat-card';
+import { TraitHistogramDialog } from '@/components/dashboard/trait-histogram-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
+import { useMonkeys } from '@/hooks/use-monkeys';
 import {
-  formatInterval,
+  formatIndex,
   formatNumber,
   formatPercent,
+  formatTrait,
   signColorClass,
 } from '@/lib/format';
 
 export function DashboardPage() {
   const { data, isPending, isError } = useDashboardSummary();
+  const { data: monkeys } = useMonkeys();
   const [isMonkeyListOpen, setIsMonkeyListOpen] = useState(false);
+  const [isTraitOpen, setIsTraitOpen] = useState(false);
+  const [isReturnsOpen, setIsReturnsOpen] = useState(false);
+
+  // Average traits over the living, non-system gene pool (matches the histogram
+  // dialog's population). Shares the ['monkeys'] cache the list dialog uses.
+  const aliveTraders =
+    monkeys?.filter((monkey) => monkey.killed_at === null && !monkey.is_system) ?? [];
+  const average = (select: (monkey: (typeof aliveTraders)[number]) => number) =>
+    aliveTraders.length
+      ? aliveTraders.reduce((sum, monkey) => sum + select(monkey), 0) / aliveTraders.length
+      : 0;
+  const avgHaste = average((monkey) => monkey.haste);
+  const avgBalls = average((monkey) => monkey.balls);
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,10 +55,9 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isPending || !data ? (
           <>
-            <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
@@ -53,17 +70,27 @@ export function DashboardPage() {
               onClick={() => setIsMonkeyListOpen(true)}
             />
             <StatCard
-              label="평균 주문 주기"
-              value={formatInterval(data.average_order_interval_seconds)}
+              label="원숭이 평균 성향"
+              value={
+                <span className="text-2xl">
+                  성급함 {formatTrait(avgHaste)} · 배짱 {formatTrait(avgBalls)}
+                </span>
+              }
+              onClick={() => setIsTraitOpen(true)}
             />
             <StatCard
               label="원숭이 지수"
-              value={formatNumber(Math.round(data.monkey_index))}
-            />
-            <StatCard
-              label="전일 대비"
-              value={formatPercent(data.monkey_index_change)}
-              valueClassName={signColorClass(data.monkey_index_change)}
+              value={
+                <span className="flex items-baseline gap-2">
+                  {formatIndex(data.monkey_index)}
+                  <span
+                    className={`text-base font-normal ${signColorClass(data.monkey_index_change)}`}
+                  >
+                    {formatPercent(data.monkey_index_change)}
+                  </span>
+                </span>
+              }
+              onClick={() => setIsReturnsOpen(true)}
             />
           </>
         )}
@@ -87,6 +114,10 @@ export function DashboardPage() {
         open={isMonkeyListOpen}
         onOpenChange={setIsMonkeyListOpen}
       />
+
+      <TraitHistogramDialog open={isTraitOpen} onOpenChange={setIsTraitOpen} />
+
+      <IndexReturnsDialog open={isReturnsOpen} onOpenChange={setIsReturnsOpen} />
     </div>
   );
 }

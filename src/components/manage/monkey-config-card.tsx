@@ -11,14 +11,9 @@ import { getApiErrorDetail } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import type { GlobalMonkeyControl } from '@/types/api'
 
-// kill_threshold is an earning ratio (-0.5 = -50%); show/edit it as a percentage.
-const ratioToPercent = (ratio: number) => Math.round(ratio * 1000) / 10
-const percentToRatio = (percent: number) => Math.round(percent * 10) / 1000
-
 function buildForm(control: GlobalMonkeyControl) {
   return {
     starting_balance: String(control.auto_create_starting_balance),
-    kill_threshold_pct: String(ratioToPercent(control.kill_threshold)),
     min_interval: String(control.auto_create_min_interval_seconds),
     max_interval: String(control.auto_create_max_interval_seconds),
   }
@@ -38,16 +33,11 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
     setError(null)
 
     const startingBalance = Number(form.starting_balance)
-    const killPct = Number(form.kill_threshold_pct)
     const minInterval = Number(form.min_interval)
     const maxInterval = Number(form.max_interval)
 
     if (!Number.isInteger(startingBalance) || startingBalance < 1) {
       setError('기본 시작 자본금은 1원 이상의 정수여야 합니다.')
-      return
-    }
-    if (!Number.isFinite(killPct)) {
-      setError('사망 기준 수익률을 올바르게 입력해 주세요.')
       return
     }
     if (
@@ -67,7 +57,6 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
     updateControl.mutate(
       {
         auto_create_starting_balance: startingBalance,
-        kill_threshold: percentToRatio(killPct),
         auto_create_min_interval_seconds: minInterval,
         auto_create_max_interval_seconds: maxInterval,
       },
@@ -96,21 +85,6 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="config-kill-threshold">사망 기준 수익률 (%)</Label>
-        <Input
-          id="config-kill-threshold"
-          type="number"
-          step="0.1"
-          value={form.kill_threshold_pct}
-          onChange={(event) => update('kill_threshold_pct', event.target.value)}
-          required
-        />
-        <p className="text-xs text-muted-foreground">
-          수익률이 이 값 아래로 떨어진 원숭이는 자동으로 사망 처리됩니다. (예: -50)
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
         <Label>거래 주기 범위 (초)</Label>
         <div className="flex items-center gap-2">
           <Input
@@ -134,7 +108,8 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          새 원숭이의 주문 주기는 이 범위(60~7200초) 안에서 무작위로 정해집니다.
+          원숭이의 거래 주기는 성급함(0~1)에 따라 이 범위(60~7200초) 안에서 정해집니다. 성급함이
+          높을수록 최소값(빠름)에, 낮을수록 최대값(느림)에 가까워집니다.
         </p>
       </div>
 

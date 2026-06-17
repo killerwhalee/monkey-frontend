@@ -17,7 +17,8 @@ import { useCreateMonkey } from '@/hooks/use-monkeys'
 const INITIAL_FORM = {
   name: '',
   initial_balance: '1000000',
-  order_interval_seconds: '300',
+  haste: '0.5',
+  balls: '0.5',
 }
 
 export function MonkeyCreateDialog() {
@@ -39,7 +40,8 @@ export function MonkeyCreateDialog() {
     setError(null)
 
     const initialBalance = Number(form.initial_balance)
-    const orderIntervalSeconds = Number(form.order_interval_seconds)
+    const haste = Number(form.haste)
+    const balls = Number(form.balls)
 
     if (!form.name.trim()) {
       setError('이름을 입력해 주세요.')
@@ -49,12 +51,12 @@ export function MonkeyCreateDialog() {
       setError('초기 자본금은 0 이상의 숫자여야 합니다.')
       return
     }
-    if (
-      !Number.isInteger(orderIntervalSeconds) ||
-      orderIntervalSeconds < 60 ||
-      orderIntervalSeconds > 7200
-    ) {
-      setError('거래 주기는 60~7200 사이의 정수(초)여야 합니다.')
+    if (!Number.isFinite(haste) || haste < 0 || haste > 1) {
+      setError('성급함은 0~1 사이의 값이어야 합니다.')
+      return
+    }
+    if (!Number.isFinite(balls) || balls < 0 || balls > 1) {
+      setError('배짱은 0~1 사이의 값이어야 합니다.')
       return
     }
 
@@ -64,7 +66,8 @@ export function MonkeyCreateDialog() {
         is_active: true,
         balance: initialBalance,
         initial_balance: initialBalance,
-        order_interval_seconds: orderIntervalSeconds,
+        haste,
+        balls,
       },
       {
         onSuccess: () => {
@@ -110,18 +113,36 @@ export function MonkeyCreateDialog() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="monkey-order-interval">거래 주기 (초)</Label>
+            <Label htmlFor="monkey-haste">성급함 (0~1)</Label>
             <Input
-              id="monkey-order-interval"
+              id="monkey-haste"
               type="number"
-              min={60}
-              max={7200}
-              value={form.order_interval_seconds}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, order_interval_seconds: event.target.value }))
-              }
+              min={0}
+              max={1}
+              step={0.05}
+              value={form.haste}
+              onChange={(event) => setForm((prev) => ({ ...prev, haste: event.target.value }))}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              높을수록 거래 주기가 짧아져 자주 거래합니다.
+            </p>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="monkey-balls">배짱 (0~1)</Label>
+            <Input
+              id="monkey-balls"
+              type="number"
+              min={0}
+              max={1}
+              step={0.05}
+              value={form.balls}
+              onChange={(event) => setForm((prev) => ({ ...prev, balls: event.target.value }))}
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              높을수록 한 번에 더 많은 수량을 주문합니다.
+            </p>
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>

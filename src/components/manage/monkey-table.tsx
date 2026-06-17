@@ -14,6 +14,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
@@ -21,7 +22,14 @@ import { useConfirm } from '@/hooks/use-confirm'
 import { useForceKillMonkey, useMonkeys, useUpdateMonkey } from '@/hooks/use-monkeys'
 import { useTableControls } from '@/hooks/use-table-controls'
 import { getApiErrorDetail } from '@/lib/api-client'
-import { formatCurrency, formatInterval, formatNumber, formatPercent, signColorClass } from '@/lib/format'
+import {
+  formatCurrency,
+  formatInterval,
+  formatNumber,
+  formatPercent,
+  formatTrait,
+  signColorClass,
+} from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Monkey } from '@/types/api'
 
@@ -119,6 +127,9 @@ export function MonkeyTable() {
           {isSystem ? '—' : formatInterval(monkey.order_interval_seconds)}
         </TableCell>
         <TableCell className="text-right font-mono tabular-nums">
+          {isSystem ? '—' : `성급함 ${formatTrait(monkey.haste)} · 배짱 ${formatTrait(monkey.balls)}`}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums">
           {formatCurrency(monkey.metrics.total_equity)}
         </TableCell>
         <TableCell
@@ -211,6 +222,7 @@ export function MonkeyTable() {
                     direction={controls.sortDir}
                     onToggle={controls.toggleSort}
                   />
+                  <TableHead className="text-right">특성</TableHead>
                   <SortableHead
                     sortKey="total_equity"
                     label="총 자산"
@@ -235,6 +247,7 @@ export function MonkeyTable() {
                     direction={controls.sortDir}
                     onToggle={controls.toggleSort}
                   />
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>

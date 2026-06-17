@@ -14,7 +14,6 @@ import {
 	formatCurrency,
 	formatHourMinute,
 	formatIntervalCompact,
-	formatPercent,
 } from '@/lib/format';
 
 export function ProjectIntroSection() {
@@ -26,7 +25,6 @@ export function ProjectIntroSection() {
 	const startingBalance = control?.auto_create_starting_balance ?? 1_000_000;
 	const minInterval = control?.auto_create_min_interval_seconds ?? 60;
 	const maxInterval = control?.auto_create_max_interval_seconds ?? 1800;
-	const killThreshold = control?.kill_threshold ?? -0.5;
 	const openTime = formatHourMinute(marketHours?.open, '09:00');
 	const closeTime = formatHourMinute(marketHours?.close, '15:30');
 
@@ -96,13 +94,15 @@ export function ProjectIntroSection() {
 								<span className="font-medium text-foreground">
 									🟢 매수 버튼
 								</span>{' '}
-								— 랜덤한 종목을 선택한 뒤, 1주를 매수합니다.
+								— 랜덤한 종목을 고른 뒤, 가진 현금으로 살 수 있는 최대 수량 가운데
+								&lsquo;배짱&rsquo;에 비례한 만큼을 매수합니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">
 									🔴 매도 버튼
 								</span>{' '}
-								— 현재 보유 중인 종목 가운데 하나를 선택한 뒤, 1주를 매도합니다.
+								— 보유 중인 종목 가운데 하나를 고른 뒤, 보유 수량 가운데
+								&lsquo;배짱&rsquo;에 비례한 만큼을 매도합니다.
 							</li>
 						</ul>
 						<p className="mt-2">
@@ -117,8 +117,10 @@ export function ProjectIntroSection() {
 							원숭이 정보
 						</h3>
 						<p className="mt-2">
-							원숭이가 태어날 때는 초기 자본, 매매 단위, 거래 주기가 고정됩니다.
-							현재 설정은 다음과 같습니다.
+							원숭이는 태어날 때 초기 자본과 두 가지 성향(성급함·배짱)을 가집니다. 이
+							두 성향이 원숭이가 <span className="font-medium text-foreground">얼마나
+							자주</span>, <span className="font-medium text-foreground">얼마나 크게</span>{' '}
+							거래하는지를 결정합니다. 현재 설정은 다음과 같습니다.
 						</p>
 						<div className="mt-3">
 							<Table>
@@ -136,15 +138,17 @@ export function ProjectIntroSection() {
 										</TableCell>
 									</TableRow>
 									<TableRow>
-										<TableCell>매매 단위</TableCell>
-										<TableCell className="text-right font-mono tabular-nums">
-											1주
+										<TableCell>성급함 (거래 빈도, 단위 %)</TableCell>
+										<TableCell className="text-right">
+											퍼센트 값이 높을수록 거래 주기가 짧아집니다. 주기는 {intervalRangeChips}{' '}
+											범위에서 정해집니다.
 										</TableCell>
 									</TableRow>
 									<TableRow>
-										<TableCell>거래 주기</TableCell>
+										<TableCell>배짱 (거래 수량, 단위 %)</TableCell>
 										<TableCell className="text-right">
-											원숭이마다 {intervalRangeChips} 사이로 무작위 설정
+											퍼센트 값이 높을수록 한 번에 더 많이 매매합니다. (살 수 있는/보유한
+											수량에 비례)
 										</TableCell>
 									</TableRow>
 								</TableBody>
@@ -190,8 +194,8 @@ export function ProjectIntroSection() {
 							</li>
 							<li>
 								<span className="font-medium text-foreground">거래</span> —
-								원숭이마다 정해진 주기({intervalRangeChips})마다 한 번씩 매수
-								또는 매도 중 하나를 행동합니다. 어떤 버튼을 누를지는 원숭이
+								원숭이마다 성급함에 따라 정해진 주기({intervalRangeChips} 범위)마다 한 번씩 매수
+								또는 매도 중 하나를 행동합니다. 한 번에 사고파는 수량은 배짱에 따라 달라지며, 어떤 버튼을 누를지는 원숭이
 								자신도 모릅니다.
 							</li>
 							<li>
@@ -222,21 +226,24 @@ export function ProjectIntroSection() {
 						<ul className="mt-2 list-disc space-y-1 pl-5">
 							<li>
 								<span className="font-medium text-foreground">🐒 번식</span> —
-								전체 평가자산이 초기 자본의 2배 이상이 되면 원숭이는 둘로
-								분화합니다. 원숭이답지 않은 번식 방식입니다.
+								새 원숭이는 살아 있는 두 원숭이를 무작위로 골라
+								&lsquo;교배&rsquo;시켜 태어납니다. 자식은 부모의 성향(성급함·배짱)을
+								섞은 값을 물려받되, 정규분포로 약간의 변이가 더해져 부모보다 더
+								과감하거나 신중해질 수도 있습니다.
 							</li>
 							<li>
 								<span className="font-medium text-foreground">☠️ 사망</span> —
-								수익률이 <ConfigValue>{formatPercent(killThreshold)}</ConfigValue>{' '}
-								미만으로 떨어진 원숭이는 시장에서 퇴출됩니다. 사망 처리는 장이
+								최근 3거래일 연속 단 한 건의 거래도 체결하지 못한 원숭이는 잔고가
+								너무 적어 더는 거래할 수 없는 것으로 보고 시장에서 퇴출됩니다. 사망
+								처리는 장이
 								열려 있는 동안에는 진행하지 않고, 매일 장 시작 전에 한 번만 일괄
 								처리합니다. (원숭이 지수가 거래 성과만 반영하도록, 장중에는 원숭이
 								수가 바뀌지 않습니다.)
 							</li>
 						</ul>
 						<p className="mt-2">
-							원숭이가 번식하거나 사망하는 경우, 보유 중인 주식은 시스템 계좌로
-							넘겨져 장중에 순차적으로 청산됩니다.
+							원숭이가 사망하면 보유 중인 주식은 시스템 계좌로 넘겨져 장중에
+							순차적으로 청산됩니다.
 						</p>
 					</section>
 
@@ -267,7 +274,6 @@ export function ProjectIntroSection() {
 							언제든지 변경될 수 있습니다. 생각 중인 기능들은 다음과 같습니다.
 						</p>
 						<ul className="mt-2 list-disc space-y-1 pl-5">
-							<li>개별 원숭이 특성 구현</li>
 							<li>투자 성과 시각화</li>
 							<li>원숭이 랭킹 시스템</li>
 							<li>사망한 원숭이 묘비(기록) 보기</li>
@@ -288,7 +294,7 @@ export function ProjectIntroSection() {
 								생각이 없진 않지만, 별로 좋은 생각이 아닐지도요..
 							</li>
 							<li>
-								&ldquo;원숭이 지수&rdquo;는 10,000을 기준값으로, 매일 전일 종가에서
+								&ldquo;원숭이 지수&rdquo;는 1,000.00을 기준값으로, 매일 전일 종가에서
 								출발해 그날 살아있는 원숭이들의 평가자산 합계 변화( 장 시작 시점 대비
 								현재 )를 곱해 산출합니다. 즉 평균 수익률이 아니라 &ldquo;오늘 원숭이들이
 								얼마나 잘 거래했는가&rdquo;를 보여주며, 원숭이 수나 계좌 잔액 변동에

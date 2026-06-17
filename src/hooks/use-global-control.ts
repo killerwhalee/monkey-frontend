@@ -15,7 +15,6 @@ type GlobalControlEditableFields = Pick<
   GlobalMonkeyControl,
   | 'manual_enabled'
   | 'note'
-  | 'kill_threshold'
   | 'auto_create_starting_balance'
   | 'auto_create_min_interval_seconds'
   | 'auto_create_max_interval_seconds'

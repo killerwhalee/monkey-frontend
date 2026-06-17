@@ -28,6 +28,7 @@ import {
   formatInterval,
   formatNumber,
   formatPercent,
+  formatTrait,
   signColorClass,
 } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -119,8 +120,8 @@ export function MonkeyDetailDialog({
                   : monkey.is_active
                     ? '운영 중'
                     : '중단됨'}{' '}
-                · 거래 주기{' '}
-                {formatInterval(monkey.order_interval_seconds)}
+                · 거래 주기 {formatInterval(monkey.order_interval_seconds)} · 성급함{' '}
+                {formatTrait(monkey.haste)} · 배짱 {formatTrait(monkey.balls)}
               </DialogDescription>
             </DialogHeader>
 

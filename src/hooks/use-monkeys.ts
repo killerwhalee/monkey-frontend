@@ -16,7 +16,8 @@ interface CreateMonkeyPayload {
   is_active: boolean
   balance: number
   initial_balance: number
-  order_interval_seconds: number
+  haste: number
+  balls: number
 }
 
 export function useCreateMonkey() {
@@ -44,7 +45,6 @@ interface UpdateMonkeyPayload {
   id: number
   is_active?: boolean
   name?: string
-  order_interval_seconds?: number
 }
 
 export function useUpdateMonkey() {

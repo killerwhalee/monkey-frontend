@@ -29,6 +29,21 @@ export function formatPercent(ratio: number): string {
   return percentFormatter.format(ratio)
 }
 
+/** A 0–1 trait value (haste/balls) as a plain, unsigned percentage. */
+export function formatTrait(value: number): string {
+  return `${Math.round(value * 100)}%`
+}
+
+const indexFormatter = new Intl.NumberFormat('ko-KR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+/** Monkey Index value, shown to 2 decimals (base 1,000.00). */
+export function formatIndex(value: number): string {
+  return indexFormatter.format(value)
+}
+
 export function formatDate(value: string): string {
   const date = new Date(value)
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`

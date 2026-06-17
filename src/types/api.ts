@@ -67,6 +67,11 @@ export interface Monkey {
   is_system: boolean
   balance: number
   initial_balance: number
+  /** 성급함 (0–1): higher = more frequent trading (shorter interval). */
+  haste: number
+  /** 배짱 (0–1): higher = larger orders. */
+  balls: number
+  /** Cadence in seconds, derived from haste at birth (read-only). */
   order_interval_seconds: number
   killed_at: string | null
   holdings: Holding[]
@@ -93,7 +98,6 @@ export interface GlobalMonkeyControl {
   time_enabled: boolean
   holiday_enabled: boolean
   manual_enabled: boolean
-  kill_threshold: number
   auto_create_starting_balance: number
   auto_create_min_interval_seconds: number
   auto_create_max_interval_seconds: number
@@ -184,14 +188,34 @@ export interface Candlestick {
 
 export interface DashboardSummary {
   active_monkey_count: number
-  /** Current Monkey Index value (base 10,000). */
+  /** Current Monkey Index value (base 1,000.00). */
   monkey_index: number
   /** Today's opening index value (yesterday's close). */
   monkey_index_open: number
   /** Fractional change vs. today's open (0.05 = +5%). */
   monkey_index_change: number
-  average_order_interval_seconds: number
   latest_orders: Order[]
+}
+
+export interface IndexReturnPeriod {
+  /** Reference date (the close this period compares against). */
+  date: string
+  /** Monkey Index value on the reference date. */
+  index: number
+  /** current / reference − 1; null if the reference index is unusable. */
+  rate: number | null
+}
+
+export interface IndexReturns {
+  /** Current Monkey Index value. */
+  current: number
+  /** Per-lookback reference; null when no data reaches that far back. */
+  periods: {
+    day: IndexReturnPeriod | null
+    week: IndexReturnPeriod | null
+    month: IndexReturnPeriod | null
+    quarter: IndexReturnPeriod | null
+  }
 }
 
 export interface AccountSummary {
