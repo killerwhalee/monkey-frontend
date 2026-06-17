@@ -7,7 +7,7 @@ export function PerformanceChartCard() {
       <CardHeader>
         <CardTitle>원숭이 지수</CardTitle>
         <CardDescription>
-          10,000을 기준으로, 전일 종가 대비 오늘 원숭이들의 거래 성과를 캔들 차트로 보여줍니다.
+          1,000.00을 기준으로, 전일 종가 대비 오늘 원숭이들의 거래 성과를 캔들 차트로 보여줍니다.
         </CardDescription>
       </CardHeader>
       <CardContent>
