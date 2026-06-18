@@ -29,7 +29,6 @@ export function ManagePage() {
           <TabsTrigger value="accounts">계좌</TabsTrigger>
           <TabsTrigger value="monkeys">원숭이</TabsTrigger>
           <TabsTrigger value="tasks">작업</TabsTrigger>
-          <TabsTrigger value="kis">KIS</TabsTrigger>
           <TabsTrigger value="feedback">피드백</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="flex flex-col gap-6">
@@ -52,6 +51,7 @@ export function ManagePage() {
         </TabsContent>
         <TabsContent value="accounts" className="flex flex-col gap-6">
           <AccountsCard />
+          <KisTokenStatusCard />
         </TabsContent>
         <TabsContent value="monkeys" className="flex flex-col gap-6">
           <MonkeyTable />
@@ -60,9 +60,6 @@ export function ManagePage() {
           <TaskControlCard />
           <TaskScheduleCard />
           <IntervalScheduleCard />
-        </TabsContent>
-        <TabsContent value="kis">
-          <KisTokenStatusCard />
         </TabsContent>
         <TabsContent value="feedback">
           <FeedbackTable />
