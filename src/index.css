@@ -159,3 +159,18 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* One-shot highlight applied to rows that just arrived over the WebSocket. */
+@keyframes blink-highlight {
+  from {
+    box-shadow: 0 0 0 2px var(--positive);
+    background-color: color-mix(in oklab, var(--positive) 18%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.blink-row {
+  animation: blink-highlight 1.4s ease-out;
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,28 @@ interface RecentOrdersTableProps {
 export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
   const [open, setOpen] = useState(true)
   const succeeded = orders.filter((order) => FILLED_STATUSES.has(order.status))
+
+  // Track which order ids we've already shown so freshly-pushed ones blink once.
+  const mounted = useRef(false)
+  const prevIds = useRef<Set<number>>(new Set())
+  const [newIds, setNewIds] = useState<Set<number>>(new Set())
+  useEffect(() => {
+    const ids = new Set(succeeded.map((order) => order.id))
+    let timer: ReturnType<typeof setTimeout> | undefined
+    if (mounted.current) {
+      // Skip the first render so existing rows don't all flash on initial load.
+      const fresh = [...ids].filter((id) => !prevIds.current.has(id))
+      if (fresh.length > 0) {
+        setNewIds(new Set(fresh))
+        timer = setTimeout(() => setNewIds(new Set()), 1500)
+      }
+    }
+    mounted.current = true
+    prevIds.current = ids
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [succeeded])
 
   return (
     <Card>
@@ -51,7 +73,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
           ) : (
             <ul className="flex flex-col gap-1.5">
               {succeeded.map((order) => (
-                <OrderRow key={order.id} order={order} />
+                <OrderRow key={order.id} order={order} isNew={newIds.has(order.id)} />
               ))}
             </ul>
           )}
@@ -61,7 +83,15 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
   )
 }
 
-export function OrderRow({ order, showMonkey = true }: { order: Order; showMonkey?: boolean }) {
+export function OrderRow({
+  order,
+  showMonkey = true,
+  isNew = false,
+}: {
+  order: Order
+  showMonkey?: boolean
+  isNew?: boolean
+}) {
   const isBuy = order.order_type === ORDER_TYPE.BUY
   const isPending = order.status === 'submitted'
   const isFilled = FILLED_STATUSES.has(order.status)
@@ -73,7 +103,12 @@ export function OrderRow({ order, showMonkey = true }: { order: Order; showMonke
     : order.executed_quantity || order.requested_quantity
 
   return (
-    <li className="flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2">
+    <li
+      className={cn(
+        'flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2',
+        isNew && 'blink-row',
+      )}
+    >
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{order.stock.name}</div>
         <div className="font-mono text-xs text-muted-foreground">
