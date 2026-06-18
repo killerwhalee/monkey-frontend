@@ -8,7 +8,6 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import { useGlobalControl } from '@/hooks/use-global-control';
 import { useMarketHours } from '@/hooks/use-market-hours';
 import {
 	formatCurrency,
@@ -17,14 +16,13 @@ import {
 } from '@/lib/format';
 
 export function ProjectIntroSection() {
-	const { data: control } = useGlobalControl();
 	const { data: marketHours } = useMarketHours();
 
-	// Fall back to the current defaults until the live config loads, so the copy
-	// stays stable and correct in the common case and updates if config differs.
-	const startingBalance = control?.auto_create_starting_balance ?? 1_000_000;
-	const minInterval = control?.auto_create_min_interval_seconds ?? 60;
-	const maxInterval = control?.auto_create_max_interval_seconds ?? 1800;
+	// Auto-create config is now per-account (admin-only); the public intro shows
+	// the standard defaults each account starts with.
+	const startingBalance = 1_000_000;
+	const minInterval = 60;
+	const maxInterval = 1800;
 	const openTime = formatHourMinute(marketHours?.open, '09:00');
 	const closeTime = formatHourMinute(marketHours?.close, '15:30');
 

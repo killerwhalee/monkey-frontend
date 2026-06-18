@@ -12,9 +12,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAccounts } from '@/hooks/use-accounts'
 import { useCreateMonkey } from '@/hooks/use-monkeys'
 
 const INITIAL_FORM = {
+  account: '',
   name: '',
   initial_balance: '1000000',
   haste: '0.5',
@@ -26,6 +28,10 @@ export function MonkeyCreateDialog() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [error, setError] = useState<string | null>(null)
   const createMonkey = useCreateMonkey()
+  const { data: accounts } = useAccounts()
+  const mockAccounts = (accounts ?? []).filter(
+    (account) => account.is_active && account.account_type === 'mock',
+  )
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
@@ -42,7 +48,12 @@ export function MonkeyCreateDialog() {
     const initialBalance = Number(form.initial_balance)
     const haste = Number(form.haste)
     const balls = Number(form.balls)
+    const accountId = Number(form.account)
 
+    if (!accountId) {
+      setError('계좌를 선택해 주세요.')
+      return
+    }
     if (!form.name.trim()) {
       setError('이름을 입력해 주세요.')
       return
@@ -62,6 +73,7 @@ export function MonkeyCreateDialog() {
 
     createMonkey.mutate(
       {
+        account: accountId,
         name: form.name.trim(),
         is_active: true,
         balance: initialBalance,
@@ -90,6 +102,25 @@ export function MonkeyCreateDialog() {
           <DialogDescription>새로운 원숭이 트레이더를 한 마리 생성합니다.</DialogDescription>
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="monkey-account">계좌</Label>
+            <select
+              id="monkey-account"
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+              value={form.account}
+              onChange={(event) => setForm((prev) => ({ ...prev, account: event.target.value }))}
+              required
+            >
+              <option value="" disabled>
+                계좌 선택
+              </option>
+              {mockAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.display_id}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="monkey-name">이름</Label>
             <Input

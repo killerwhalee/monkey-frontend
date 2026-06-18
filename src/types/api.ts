@@ -60,8 +60,34 @@ export interface MonkeyMetrics {
   earning_ratio: number
 }
 
+export type AccountType = 'mock' | 'real'
+
+export interface Account {
+  id: number
+  display_id: string
+  account_type: AccountType
+  account_number: string
+  product_code: string
+  is_active: boolean
+  auto_create_starting_balance: number
+  auto_create_min_interval_seconds: number
+  auto_create_max_interval_seconds: number
+  token_status: { has_token: boolean; expires_at: string | null }
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateAccountPayload {
+  account_type: AccountType
+  app_key: string
+  app_secret: string
+  account_number: string
+  product_code: string
+}
+
 export interface Monkey {
   id: number
+  account: number | null
   name: string
   is_active: boolean
   is_system: boolean
@@ -87,6 +113,7 @@ export interface MonkeySummaryItem {
 }
 
 export interface MonkeyBulkCreatePayload {
+  account: number
   count: number
   starting_balance: number
 }
@@ -98,9 +125,6 @@ export interface GlobalMonkeyControl {
   time_enabled: boolean
   holiday_enabled: boolean
   manual_enabled: boolean
-  auto_create_starting_balance: number
-  auto_create_min_interval_seconds: number
-  auto_create_max_interval_seconds: number
   note: string
   created_at: string
   updated_at: string
@@ -219,6 +243,9 @@ export interface IndexReturns {
 }
 
 export interface AccountSummary {
+  account_id: number
+  display_id: string
+  account_type: AccountType
   kis_cash_balance: number
   kis_holdings_value: number
   kis_total_assets: number
