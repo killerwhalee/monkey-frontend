@@ -49,13 +49,13 @@ export function ManagePage() {
             </p>
           )}
           <TradingControlCard />
-          <MonkeyConfigCard />
         </TabsContent>
         <TabsContent value="accounts" className="flex flex-col gap-6">
           <AccountsCard />
           <KisTokenStatusCard />
         </TabsContent>
         <TabsContent value="monkeys" className="flex flex-col gap-6">
+          <MonkeyConfigCard />
           <MonkeyTable />
         </TabsContent>
         <TabsContent value="tasks" className="flex flex-col gap-6">
