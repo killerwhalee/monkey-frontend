@@ -12,6 +12,7 @@ export function useMonkeys() {
 }
 
 interface CreateMonkeyPayload {
+  account: number
   name: string
   is_active: boolean
   balance: number

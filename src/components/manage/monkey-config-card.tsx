@@ -153,7 +153,18 @@ export function MonkeyConfigCard() {
       {open ? (
         <CardContent>
           {isPending || !data ? (
-            <Skeleton className="h-72 w-full" />
+            // Field-shaped placeholders for the form contents, not one big block.
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+              <Skeleton className="ml-auto h-9 w-20" />
+            </div>
           ) : (
             // Re-seed the form from canonical server state whenever it changes.
             <ConfigForm key={data.updated_at} control={data} />

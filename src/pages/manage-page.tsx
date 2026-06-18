@@ -1,3 +1,4 @@
+import { AccountsCard } from '@/components/manage/accounts-card'
 import { FeedbackTable } from '@/components/manage/feedback-table'
 import { IntervalScheduleCard } from '@/components/manage/interval-schedule-card'
 import { KisAssetsCard } from '@/components/manage/kis-assets-card'
@@ -11,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAccountSummary } from '@/hooks/use-account-summary'
 
 export function ManagePage() {
-  const { data } = useAccountSummary()
+  const { data: summaries, isPending: summariesPending } = useAccountSummary()
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,14 +26,32 @@ export function ManagePage() {
       <Tabs defaultValue="overview" className="gap-4">
         <TabsList>
           <TabsTrigger value="overview">개요</TabsTrigger>
+          <TabsTrigger value="accounts">계좌</TabsTrigger>
           <TabsTrigger value="monkeys">원숭이</TabsTrigger>
           <TabsTrigger value="tasks">작업</TabsTrigger>
-          <TabsTrigger value="kis">KIS</TabsTrigger>
           <TabsTrigger value="feedback">피드백</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="flex flex-col gap-6">
-          <KisAssetsCard title="전체 자산 현황" data={data} />
+          {summariesPending ? (
+            <KisAssetsCard />
+          ) : summaries && summaries.length > 0 ? (
+            summaries.map((summary) => (
+              <KisAssetsCard
+                key={summary.account_id}
+                title={`자산 현황 · ${summary.display_id}`}
+                data={summary}
+              />
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              등록된 계좌가 없습니다. ‘계좌’ 탭에서 KIS 계좌를 먼저 등록하세요.
+            </p>
+          )}
           <TradingControlCard />
+        </TabsContent>
+        <TabsContent value="accounts" className="flex flex-col gap-6">
+          <AccountsCard />
+          <KisTokenStatusCard />
         </TabsContent>
         <TabsContent value="monkeys" className="flex flex-col gap-6">
           <MonkeyConfigCard />
@@ -42,9 +61,6 @@ export function ManagePage() {
           <TaskControlCard />
           <TaskScheduleCard />
           <IntervalScheduleCard />
-        </TabsContent>
-        <TabsContent value="kis">
-          <KisTokenStatusCard />
         </TabsContent>
         <TabsContent value="feedback">
           <FeedbackTable />

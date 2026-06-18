@@ -12,9 +12,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAccounts } from '@/hooks/use-accounts'
 import { useBulkCreateMonkeys } from '@/hooks/use-monkeys'
 
 const INITIAL_FORM = {
+  account: '',
   count: '10',
   starting_balance: '1000000',
 }
@@ -24,6 +26,10 @@ export function MonkeyBulkCreateDialog() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [error, setError] = useState<string | null>(null)
   const bulkCreateMonkeys = useBulkCreateMonkeys()
+  const { data: accounts } = useAccounts()
+  const mockAccounts = (accounts ?? []).filter(
+    (account) => account.is_active && account.account_type === 'mock',
+  )
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
@@ -39,7 +45,12 @@ export function MonkeyBulkCreateDialog() {
 
     const count = Number(form.count)
     const startingBalance = Number(form.starting_balance)
+    const accountId = Number(form.account)
 
+    if (!accountId) {
+      setError('계좌를 선택해 주세요.')
+      return
+    }
     if (!Number.isInteger(count) || count < 1 || count > 1000) {
       setError('생성 개수는 1~1000 사이의 정수여야 합니다.')
       return
@@ -51,6 +62,7 @@ export function MonkeyBulkCreateDialog() {
 
     bulkCreateMonkeys.mutate(
       {
+        account: accountId,
         count,
         starting_balance: startingBalance,
       },
@@ -77,6 +89,25 @@ export function MonkeyBulkCreateDialog() {
           </DialogDescription>
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="bulk-account">계좌</Label>
+            <select
+              id="bulk-account"
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+              value={form.account}
+              onChange={(event) => setForm((prev) => ({ ...prev, account: event.target.value }))}
+              required
+            >
+              <option value="" disabled>
+                계좌 선택
+              </option>
+              {mockAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.display_id}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="bulk-count">생성 개수</Label>
             <Input

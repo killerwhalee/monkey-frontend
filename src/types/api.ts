@@ -25,7 +25,13 @@ export const ORDER_TYPE = {
 
 export type OrderType = (typeof ORDER_TYPE)[keyof typeof ORDER_TYPE]
 
-export type OrderStatus = 'created' | 'skipped' | 'submitted' | 'succeeded' | 'failed'
+export type OrderStatus =
+  | 'created'
+  | 'skipped'
+  | 'submitted'
+  | 'executed'
+  | 'succeeded'
+  | 'failed'
 
 export interface Order {
   id: number
@@ -52,6 +58,10 @@ export interface Order {
 
 export interface MonkeyMetrics {
   cash_balance: number
+  /** 주문가능금액: settled cash minus what pending buy orders reserve. */
+  available_cash: number
+  /** Count of accepted-but-unfilled (submitted) orders. */
+  pending_orders: number
   holdings_value: number
   total_equity: number
   total_pl: number
@@ -60,8 +70,31 @@ export interface MonkeyMetrics {
   earning_ratio: number
 }
 
+export type AccountType = 'mock' | 'real'
+
+export interface Account {
+  id: number
+  display_id: string
+  account_type: AccountType
+  account_number: string
+  product_code: string
+  is_active: boolean
+  token_status: { has_token: boolean; expires_at: string | null }
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateAccountPayload {
+  account_type: AccountType
+  app_key: string
+  app_secret: string
+  account_number: string
+  product_code: string
+}
+
 export interface Monkey {
   id: number
+  account: number | null
   name: string
   is_active: boolean
   is_system: boolean
@@ -87,6 +120,7 @@ export interface MonkeySummaryItem {
 }
 
 export interface MonkeyBulkCreatePayload {
+  account: number
   count: number
   starting_balance: number
 }
@@ -98,8 +132,11 @@ export interface GlobalMonkeyControl {
   time_enabled: boolean
   holiday_enabled: boolean
   manual_enabled: boolean
+  /** Cash each auto-created monkey starts with (global). */
   auto_create_starting_balance: number
+  /** Fastest cadence in seconds (haste=1). */
   auto_create_min_interval_seconds: number
+  /** Slowest cadence in seconds (haste=0). */
   auto_create_max_interval_seconds: number
   note: string
   created_at: string
@@ -219,6 +256,9 @@ export interface IndexReturns {
 }
 
 export interface AccountSummary {
+  account_id: number
+  display_id: string
+  account_type: AccountType
   kis_cash_balance: number
   kis_holdings_value: number
   kis_total_assets: number

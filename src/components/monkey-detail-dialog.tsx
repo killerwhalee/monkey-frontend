@@ -95,9 +95,12 @@ export function MonkeyDetailDialog({
   })
 
   const rawOrders = showAllOrders ? (allOrders ?? []) : (monkey?.recent_orders ?? [])
-  const succeededOrders = rawOrders.filter((order) => order.status === 'succeeded')
+  // Show orders that reached KIS: pending (체결 대기) and filled (체결 완료);
+  // skipped/failed/created attempts are noise here.
+  const tradeStatuses = new Set<Order['status']>(['submitted', 'executed', 'succeeded'])
+  const visibleOrders = rawOrders.filter((order) => tradeStatuses.has(order.status))
   const orders = useTableControls<Order>({
-    rows: succeededOrders,
+    rows: visibleOrders,
     columns: { created_at: (order) => order.created_at },
     initialSortKey: 'created_at',
     initialSortDir: 'desc',
@@ -128,6 +131,7 @@ export function MonkeyDetailDialog({
             <AssetsCard
               initialBalance={monkey.initial_balance}
               cashBalance={monkey.metrics.cash_balance}
+              availableCash={monkey.metrics.available_cash}
               holdingsValue={monkey.metrics.holdings_value}
               totalEquity={monkey.metrics.total_equity}
               totalPl={monkey.metrics.total_pl}
@@ -250,15 +254,15 @@ export function MonkeyDetailDialog({
               )}
             </Section>
 
-            <Section title={`체결 주문 ${formatNumber(succeededOrders.length)}건`}>
+            <Section title={`주문 내역 ${formatNumber(visibleOrders.length)}건`}>
               {showAllOrders && ordersPending ? (
                 <div className="flex flex-col gap-2">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                 </div>
-              ) : succeededOrders.length === 0 ? (
-                <p className="text-sm text-muted-foreground">체결된 주문이 없습니다.</p>
+              ) : visibleOrders.length === 0 ? (
+                <p className="text-sm text-muted-foreground">주문 내역이 없습니다.</p>
               ) : (
                 <>
                   <ul className="flex flex-col gap-1.5">
