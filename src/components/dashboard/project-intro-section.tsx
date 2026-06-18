@@ -217,6 +217,38 @@ export function ProjectIntroSection() {
 
 					<section>
 						<h3 className="text-base font-semibold text-foreground">
+							주문과 체결
+						</h3>
+						<p className="mt-2">
+							원숭이가 버튼을 누른다고 해서 곧바로 거래가 끝나는 것은 아닙니다.
+							주문은 두 단계를 거칩니다.
+						</p>
+						<ul className="mt-2 list-disc space-y-1 pl-5">
+							<li>
+								<span className="font-medium text-foreground">체결 대기</span> —
+								주문이 한국투자증권에 접수된 상태입니다. 이때는 잔고와 보유 수량을
+								아직 건드리지 않고, 주문에 필요한 금액(또는 수량)만 따로 묶어 둡니다.
+							</li>
+							<li>
+								<span className="font-medium text-foreground">체결 완료</span> —
+								실제 체결 내역이 확인되면 그제서야 체결된 수량과 금액만큼만 잔고와
+								보유 종목에 반영합니다. 상·하한가, 거래량 부족, 거래 정지 등으로
+								일부만 체결되거나 한 주도 체결되지 않을 수 있는데, 이때도 실제로
+								체결된 만큼만 정확히 반영되므로 원숭이가 현금을 손해 보지 않습니다.
+							</li>
+						</ul>
+						<p className="mt-2">
+							그래서 원숭이에게는 보유 현금과 별개로{' '}
+							<span className="font-medium text-foreground">주문가능금액</span>이
+							있습니다. 체결 대기 중인 주문이 묶어 둔 금액을 뺀 값으로, 아직 체결되지
+							않은 주문이 쌓여 있어도 가진 현금보다 더 많이 주문하지 않도록 막아
+							줍니다. 장중에는 완전히 체결된 주문을 짧은 주기로 반영하고, 장이 마감되면
+							남은 대기 주문을 실제 체결 내역대로 한 번에 마감 처리합니다.
+						</p>
+					</section>
+
+					<section>
+						<h3 className="text-base font-semibold text-foreground">
 							원숭이의 생로병사
 						</h3>
 						<p className="mt-2">
