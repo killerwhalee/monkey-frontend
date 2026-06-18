@@ -8,7 +8,6 @@ import { MonkeyTable } from '@/components/manage/monkey-table'
 import { TaskControlCard } from '@/components/manage/task-control-card'
 import { TaskScheduleCard } from '@/components/manage/task-schedule-card'
 import { TradingControlCard } from '@/components/manage/trading-control-card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAccountSummary } from '@/hooks/use-account-summary'
 
@@ -34,7 +33,7 @@ export function ManagePage() {
         </TabsList>
         <TabsContent value="overview" className="flex flex-col gap-6">
           {summariesPending ? (
-            <Skeleton className="h-64 w-full" />
+            <KisAssetsCard />
           ) : summaries && summaries.length > 0 ? (
             summaries.map((summary) => (
               <KisAssetsCard

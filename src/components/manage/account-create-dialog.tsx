@@ -113,7 +113,6 @@ export function AccountCreateDialog() {
             <Label htmlFor="acct-key">App Key</Label>
             <Input
               id="acct-key"
-              type="password"
               value={form.app_key}
               onChange={(event) => update('app_key', event.target.value)}
               required
@@ -123,7 +122,6 @@ export function AccountCreateDialog() {
             <Label htmlFor="acct-secret">App Secret</Label>
             <Input
               id="acct-secret"
-              type="password"
               value={form.app_secret}
               onChange={(event) => update('app_secret', event.target.value)}
               required
