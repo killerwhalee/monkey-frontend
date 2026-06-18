@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { FeedbackSubmitDialog } from '@/components/feedback/feedback-submit-dialog'
 import { useAuth } from '@/hooks/use-auth'
+import { useRealtime } from '@/hooks/use-realtime'
 import { cn } from '@/lib/utils'
 
 function NavTab({ to, children }: { to: string; children: ReactNode }) {
@@ -23,6 +24,7 @@ function NavTab({ to, children }: { to: string; children: ReactNode }) {
 
 export function AppShell() {
   const { isAuthenticated, isAdmin, isAdminChecked, logout } = useAuth()
+  useRealtime(isAdmin)
 
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">

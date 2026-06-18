@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { useConfirm } from '@/hooks/use-confirm'
 import { useGlobalControl } from '@/hooks/use-global-control'
-import { useRunnableTasks, useRunTask } from '@/hooks/use-tasks'
+import { useRunnableTasks, useRunningTasks, useRunTask } from '@/hooks/use-tasks'
 import { getApiErrorDetail } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import type { RunnableTask } from '@/types/api'
@@ -80,6 +80,7 @@ export function TaskControlCard() {
   const { data: tasks, isPending: tasksPending } = useRunnableTasks()
   const { data: control, isPending: controlPending } = useGlobalControl()
   const runTask = useRunTask()
+  const { isRunning, markRunning } = useRunningTasks()
   const confirm = useConfirm()
   const [open, setOpen] = useState(false)
 
@@ -103,22 +104,30 @@ export function TaskControlCard() {
       if (!confirmed) return
     }
     runTask.mutate(task.name, {
-      onSuccess: () => toast.success(`'${task.label}' 작업을 실행 요청했습니다.`),
+      onSuccess: (data) => {
+        // Keep the button disabled until the WS task.finished event clears it.
+        markRunning(data.id, task.task)
+        toast.success(`'${task.label}' 작업을 실행 요청했습니다.`)
+      },
       onError: (error) =>
         toast.error(getApiErrorDetail(error) ?? `'${task.label}' 작업 실행에 실패했습니다.`),
     })
   }
 
-  const renderRow = (task: RunnableTask) => (
-    <TaskRow
-      key={task.name}
-      task={task}
-      onRun={handleRun}
-      isRunning={runTask.isPending && runTask.variables === task.name}
-      disabled={runTask.isPending}
-      marketOpen={marketOpen}
-    />
-  )
+  const renderRow = (task: RunnableTask) => {
+    const enqueuing = runTask.isPending && runTask.variables === task.name
+    const taskRunning = isRunning(task.task)
+    return (
+      <TaskRow
+        key={task.name}
+        task={task}
+        onRun={handleRun}
+        isRunning={enqueuing || taskRunning}
+        disabled={enqueuing || taskRunning}
+        marketOpen={marketOpen}
+      />
+    )
+  }
 
   return (
     <Card>
