@@ -3,6 +3,7 @@ import { FeedbackTable } from '@/components/manage/feedback-table'
 import { IntervalScheduleCard } from '@/components/manage/interval-schedule-card'
 import { KisAssetsCard } from '@/components/manage/kis-assets-card'
 import { KisTokenStatusCard } from '@/components/manage/kis-token-status-card'
+import { MonkeyConfigCard } from '@/components/manage/monkey-config-card'
 import { MonkeyTable } from '@/components/manage/monkey-table'
 import { TaskControlCard } from '@/components/manage/task-control-card'
 import { TaskScheduleCard } from '@/components/manage/task-schedule-card'
@@ -48,6 +49,7 @@ export function ManagePage() {
             </p>
           )}
           <TradingControlCard />
+          <MonkeyConfigCard />
         </TabsContent>
         <TabsContent value="accounts" className="flex flex-col gap-6">
           <AccountsCard />

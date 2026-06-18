@@ -1,87 +1,14 @@
-import { useState, type FormEvent } from 'react'
 import { Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 import { AccountCreateDialog } from '@/components/manage/account-create-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAccounts, useDeleteAccount, useUpdateAccount } from '@/hooks/use-accounts'
+import { useAccounts, useDeleteAccount } from '@/hooks/use-accounts'
 import { useConfirm } from '@/hooks/use-confirm'
 import { getApiErrorDetail } from '@/lib/api-client'
 import type { Account } from '@/types/api'
-
-function AccountConfig({ account }: { account: Account }) {
-  const updateAccount = useUpdateAccount()
-  const [form, setForm] = useState({
-    starting: String(account.auto_create_starting_balance),
-    min: String(account.auto_create_min_interval_seconds),
-    max: String(account.auto_create_max_interval_seconds),
-  })
-  const [error, setError] = useState<string | null>(null)
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    const starting = Number(form.starting)
-    const min = Number(form.min)
-    const max = Number(form.max)
-    if (max < min) {
-      setError('최대 거래 주기는 최소 거래 주기 이상이어야 합니다.')
-      return
-    }
-    updateAccount.mutate(
-      {
-        id: account.id,
-        auto_create_starting_balance: starting,
-        auto_create_min_interval_seconds: min,
-        auto_create_max_interval_seconds: max,
-      },
-      {
-        onSuccess: () => toast.success('자동 생성 설정을 저장했습니다.'),
-        onError: (err) => setError(getApiErrorDetail(err) ?? '설정 저장에 실패했습니다.'),
-      },
-    )
-  }
-
-  return (
-    <form className="mt-3 flex flex-col gap-2 border-t border-border/50 pt-3" onSubmit={handleSubmit}>
-      <p className="text-xs font-medium text-muted-foreground">자동 생성 설정</p>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Input
-          aria-label="시작 자본금"
-          type="number"
-          min={1}
-          value={form.starting}
-          onChange={(event) => setForm((prev) => ({ ...prev, starting: event.target.value }))}
-        />
-        <Input
-          aria-label="최소 거래 주기"
-          type="number"
-          min={60}
-          max={7200}
-          value={form.min}
-          onChange={(event) => setForm((prev) => ({ ...prev, min: event.target.value }))}
-        />
-        <Input
-          aria-label="최대 거래 주기"
-          type="number"
-          min={60}
-          max={7200}
-          value={form.max}
-          onChange={(event) => setForm((prev) => ({ ...prev, max: event.target.value }))}
-        />
-      </div>
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" variant="outline" disabled={updateAccount.isPending}>
-          {updateAccount.isPending ? '저장 중...' : '설정 저장'}
-        </Button>
-      </div>
-    </form>
-  )
-}
 
 function AccountRow({ account }: { account: Account }) {
   const deleteAccount = useDeleteAccount()
@@ -132,9 +59,6 @@ function AccountRow({ account }: { account: Account }) {
           삭제
         </Button>
       </div>
-      {account.is_active && account.account_type === 'mock' ? (
-        <AccountConfig account={account} />
-      ) : null}
     </div>
   )
 }

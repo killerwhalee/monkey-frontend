@@ -79,9 +79,6 @@ export interface Account {
   account_number: string
   product_code: string
   is_active: boolean
-  auto_create_starting_balance: number
-  auto_create_min_interval_seconds: number
-  auto_create_max_interval_seconds: number
   token_status: { has_token: boolean; expires_at: string | null }
   created_at: string
   updated_at: string
@@ -135,6 +132,12 @@ export interface GlobalMonkeyControl {
   time_enabled: boolean
   holiday_enabled: boolean
   manual_enabled: boolean
+  /** Cash each auto-created monkey starts with (global). */
+  auto_create_starting_balance: number
+  /** Fastest cadence in seconds (haste=1). */
+  auto_create_min_interval_seconds: number
+  /** Slowest cadence in seconds (haste=0). */
+  auto_create_max_interval_seconds: number
   note: string
   created_at: string
   updated_at: string

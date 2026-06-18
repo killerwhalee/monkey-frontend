@@ -22,24 +22,6 @@ export function useCreateAccount() {
   })
 }
 
-interface UpdateAccountPayload {
-  id: number
-  auto_create_starting_balance?: number
-  auto_create_min_interval_seconds?: number
-  auto_create_max_interval_seconds?: number
-}
-
-export function useUpdateAccount() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, ...payload }: UpdateAccountPayload) =>
-      api.patch<Account>(`/accounts/${id}/`, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEY })
-    },
-  })
-}
-
 export function useDeleteAccount() {
   const queryClient = useQueryClient()
   return useMutation({
