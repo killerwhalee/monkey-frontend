@@ -25,7 +25,13 @@ export const ORDER_TYPE = {
 
 export type OrderType = (typeof ORDER_TYPE)[keyof typeof ORDER_TYPE]
 
-export type OrderStatus = 'created' | 'skipped' | 'submitted' | 'succeeded' | 'failed'
+export type OrderStatus =
+  | 'created'
+  | 'skipped'
+  | 'submitted'
+  | 'executed'
+  | 'succeeded'
+  | 'failed'
 
 export interface Order {
   id: number
@@ -52,6 +58,10 @@ export interface Order {
 
 export interface MonkeyMetrics {
   cash_balance: number
+  /** 주문가능금액: settled cash minus what pending buy orders reserve. */
+  available_cash: number
+  /** Count of accepted-but-unfilled (submitted) orders. */
+  pending_orders: number
   holdings_value: number
   total_equity: number
   total_pl: number

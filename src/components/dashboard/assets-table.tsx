@@ -10,6 +10,9 @@ import { cn } from '@/lib/utils'
 interface AssetsTableProps {
   initialBalance: number
   cashBalance: number
+  /** 주문가능금액: settled cash minus pending-buy reserves. Shown only when it
+   * differs from cash (i.e. there are pending orders reserving funds). */
+  availableCash?: number
   holdingsValue: number
   totalEquity: number
   totalPl: number
@@ -18,6 +21,7 @@ interface AssetsTableProps {
 
 export function AssetsTable({
   cashBalance,
+  availableCash,
   holdingsValue,
   totalEquity,
   initialBalance,
@@ -26,6 +30,15 @@ export function AssetsTable({
 }: AssetsTableProps) {
   const rows: { label: string; value: string; className?: string }[] = [
     { label: '① 보유 현금', value: formatCurrency(cashBalance) },
+    ...(availableCash !== undefined && availableCash !== cashBalance
+      ? [
+          {
+            label: '· 주문가능금액',
+            value: formatCurrency(availableCash),
+            className: 'text-muted-foreground',
+          },
+        ]
+      : []),
     { label: '② 보유 종목 평가액', value: formatCurrency(holdingsValue) },
     { label: '③ 현재 평가자산 (①+②)', value: formatCurrency(totalEquity) },
     { label: '④ 초기 자본금', value: formatCurrency(initialBalance) },

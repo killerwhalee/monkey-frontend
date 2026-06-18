@@ -6,6 +6,7 @@ interface AssetsCardProps {
   title?: string
   initialBalance: number
   cashBalance: number
+  availableCash?: number
   holdingsValue: number
   totalEquity: number
   totalPl: number
@@ -16,6 +17,7 @@ export function AssetsCard({
   title = '자산 현황',
   initialBalance,
   cashBalance,
+  availableCash,
   holdingsValue,
   totalEquity,
   totalPl,
@@ -35,6 +37,7 @@ export function AssetsCard({
         <AssetsTable
           initialBalance={initialBalance}
           cashBalance={cashBalance}
+          availableCash={availableCash}
           holdingsValue={holdingsValue}
           totalEquity={totalEquity}
           totalPl={totalPl}
