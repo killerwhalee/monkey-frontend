@@ -6,10 +6,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useDashboardSummary } from '@/hooks/use-dashboard-summary'
 import { useGlobalControl, useUpdateGlobalControl } from '@/hooks/use-global-control'
 import { getApiErrorDetail } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import type { GlobalMonkeyControl } from '@/types/api'
+
+function formatSeconds(s: number): string {
+  const rounded = Math.round(s)
+  if (rounded < 60) return `${rounded}초`
+  const m = Math.floor(rounded / 60)
+  const sec = rounded % 60
+  if (m < 60) return sec > 0 ? `${m}분 ${sec}초` : `${m}분`
+  const h = Math.floor(m / 60)
+  const min = m % 60
+  return min > 0 ? `${h}시간 ${min}분` : `${h}시간`
+}
+
+function avgKisInterval(n: number, a: number, b: number): number | null {
+  if (n <= 0 || a <= 0 || b <= 0 || a > b) return null
+  if (a === b) return a / n
+  return (b - a) / (n * Math.log(b / a))
+}
 
 function buildForm(control: GlobalMonkeyControl) {
   return {
@@ -19,10 +37,41 @@ function buildForm(control: GlobalMonkeyControl) {
   }
 }
 
+function IntervalHint({
+  form,
+  activeMonkeys: n,
+}: {
+  form: ReturnType<typeof buildForm>
+  activeMonkeys: number
+}) {
+  const a = Number(form.min_interval)
+  const b = Number(form.max_interval)
+  const avgT = Number.isFinite(a) && Number.isFinite(b) ? avgKisInterval(n, a, b) : null
+
+  return (
+    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      <p>
+        원숭이의 거래 주기는 성급함(0~1)에 따라 이 범위({a}~{b}초) 안에서 정해집니다. 성급함이
+        높을수록 최소값(빠름)에, 낮을수록 최대값(느림)에 가까워집니다.
+      </p>
+      {n > 0 && avgT !== null && Number.isFinite(avgT) && avgT > 0 ? (
+        <p>
+          현재 활성 원숭이 {n}마리 기준, KIS API 평균 호출 간격은 약{' '}
+          <span className="font-medium text-foreground">{formatSeconds(avgT)}</span>입니다 (범위:{' '}
+          {formatSeconds(a / n)} ~ {formatSeconds(b / n)}).
+        </p>
+      ) : n === 0 ? (
+        <p>활성 원숭이가 없어 평균 호출 간격을 계산할 수 없습니다.</p>
+      ) : null}
+    </div>
+  )
+}
+
 function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
   const updateControl = useUpdateGlobalControl()
   const [form, setForm] = useState(() => buildForm(control))
   const [error, setError] = useState<string | null>(null)
+  const { data: summary } = useDashboardSummary()
 
   function update(field: keyof ReturnType<typeof buildForm>, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -107,10 +156,7 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
             required
           />
         </div>
-        <p className="text-xs text-muted-foreground">
-          원숭이의 거래 주기는 성급함(0~1)에 따라 이 범위(60~7200초) 안에서 정해집니다. 성급함이
-          높을수록 최소값(빠름)에, 낮을수록 최대값(느림)에 가까워집니다.
-        </p>
+        <IntervalHint form={form} activeMonkeys={summary?.active_monkey_count ?? 0} />
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
