@@ -17,9 +17,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment variables (never commit secrets/local overrides)
+# Environment variables (never commit secrets)
 .env
-.env.local
 .env.*.local
 
 # Editor / IDE

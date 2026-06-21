@@ -30,6 +30,7 @@ interface HoverInfo {
 }
 
 const UNIT_LABELS: Record<CandleUnit, string> = {
+  '1t': '1틱',
   '1m': '1분',
   '15m': '15분',
   '1h': '1시간',
@@ -230,8 +231,13 @@ export function CandlestickChart() {
     const date = new Date(info.time * 1000)
     const pad = (n: number) => String(n).padStart(2, '0')
     const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`
+    const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`
     const header =
-      unit === '1d' ? dateStr : `${dateStr} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`
+      unit === '1d'
+        ? dateStr
+        : unit === '1t'
+          ? `${dateStr} ${timeStr}:${pad(date.getUTCSeconds())}`
+          : `${dateStr} ${timeStr}`
     const rows: [string, number][] = [
       ['시가', info.open],
       ['종가', info.close],
@@ -288,7 +294,7 @@ export function CandlestickChart() {
         ) : isEmpty ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center text-sm text-muted-foreground">
             <p>아직 표시할 캔들이 없습니다.</p>
-            <p>거래 시간 동안 1분마다 기록이 쌓이면 채워집니다.</p>
+            <p>거래 시간 동안 가격이 업데이트될 때마다 기록이 쌓입니다.</p>
           </div>
         ) : null}
       </div>
