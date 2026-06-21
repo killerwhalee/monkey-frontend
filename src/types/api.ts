@@ -210,7 +210,7 @@ export interface UpdateIntervalPayload {
   every: number
 }
 
-export const CANDLE_UNITS = ['1m', '15m', '1h', '4h', '1d'] as const
+export const CANDLE_UNITS = ['1t', '1m', '15m', '1h', '4h', '1d'] as const
 
 export type CandleUnit = (typeof CANDLE_UNITS)[number]
 
