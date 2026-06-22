@@ -71,6 +71,32 @@ export function formatIntervalCompact(seconds: number): string {
   return `${minutes}분 ${remainder}초`
 }
 
+/** Like {@link formatIntervalCompact} but also rolls minutes up into hours. */
+export function formatSeconds(seconds: number): string {
+  const rounded = Math.round(seconds)
+  if (rounded < 60) return `${rounded}초`
+  const m = Math.floor(rounded / 60)
+  const sec = rounded % 60
+  if (m < 60) return sec > 0 ? `${m}분 ${sec}초` : `${m}분`
+  const h = Math.floor(m / 60)
+  const min = m % 60
+  return min > 0 ? `${h}시간 ${min}분` : `${h}시간`
+}
+
+/**
+ * Average interval between KIS API calls across the whole active fleet, given
+ * `n` active monkeys each trading on a per-monkey interval drawn uniformly from
+ * `[a, b]` seconds. The aggregate call rate is the sum of per-monkey rates, so
+ * the mean call interval is the reciprocal of the mean rate: with intervals
+ * uniform on `[a, b]`, E[1/T] = ln(b/a)/(b-a), giving (b-a)/(n·ln(b/a)).
+ * Returns `null` for degenerate inputs.
+ */
+export function avgKisInterval(n: number, a: number, b: number): number | null {
+  if (n <= 0 || a <= 0 || b <= 0 || a > b) return null
+  if (a === b) return a / n
+  return (b - a) / (n * Math.log(b / a))
+}
+
 export function formatHourMinute(
   value: { hour: number | null; minute: number | null } | undefined,
   fallback: string,

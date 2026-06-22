@@ -8,17 +8,21 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
 import { useGlobalControl } from '@/hooks/use-global-control';
 import { useMarketHours } from '@/hooks/use-market-hours';
 import {
+	avgKisInterval,
 	formatCurrency,
 	formatHourMinute,
 	formatIntervalCompact,
+	formatSeconds,
 } from '@/lib/format';
 
 export function ProjectIntroSection() {
 	const { data: control } = useGlobalControl();
 	const { data: marketHours } = useMarketHours();
+	const { data: summary } = useDashboardSummary();
 
 	// Fall back to the current defaults until the live config loads, so the copy
 	// stays stable and correct in the common case and updates if config differs.
@@ -27,6 +31,11 @@ export function ProjectIntroSection() {
 	const maxInterval = control?.auto_create_max_interval_seconds ?? 1800;
 	const openTime = formatHourMinute(marketHours?.open, '09:00');
 	const closeTime = formatHourMinute(marketHours?.close, '15:30');
+
+	const activeMonkeys = summary?.active_monkey_count ?? 0;
+	const avgKis = avgKisInterval(activeMonkeys, minInterval, maxInterval);
+	const showAvgKis =
+		activeMonkeys > 0 && avgKis !== null && Number.isFinite(avgKis) && avgKis > 0;
 
 	const startingBalanceChip = (
 		<ConfigValue>{formatCurrency(startingBalance)}</ConfigValue>
@@ -154,8 +163,29 @@ export function ProjectIntroSection() {
 								</TableBody>
 							</Table>
 						</div>
+						<p className="mt-3">
+							원숭이의 거래 주기는 성급함에 따라{' '}
+							<ConfigValue>{minInterval}초</ConfigValue>~
+							<ConfigValue>{maxInterval}초</ConfigValue> 안에서 정해집니다. 성급함이
+							높을수록 최소값(빠름)에, 낮을수록 최대값(느림)에 가까워집니다.
+						</p>
+						{showAvgKis ? (
+							<p className="mt-2">
+								현재 활성 원숭이 <ConfigValue>{activeMonkeys}마리</ConfigValue>{' '}
+								기준, KIS API 평균 호출 간격은 약{' '}
+								<ConfigValue>{formatSeconds(avgKis!)}</ConfigValue>입니다 (범위:{' '}
+								<ConfigValue>
+									{formatSeconds(minInterval / activeMonkeys)}
+								</ConfigValue>{' '}
+								~{' '}
+								<ConfigValue>
+									{formatSeconds(maxInterval / activeMonkeys)}
+								</ConfigValue>
+								).
+							</p>
+						) : null}
 						<p className="mt-2">
-							새로 태어난 원숭이에게는 흔한 애완동물 이름이 무작위로 주어집니다.
+							새로 태어난 원숭이에게는 흔한 이름이 무작위로 주어집니다.
 							이름이 중복되면 로마 숫자를 붙여 구분합니다 (예: &ldquo;Arthur
 							VI&rdquo;).
 						</p>

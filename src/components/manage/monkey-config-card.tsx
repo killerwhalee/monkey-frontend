@@ -10,26 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary'
 import { useGlobalControl, useUpdateGlobalControl } from '@/hooks/use-global-control'
 import { getApiErrorDetail } from '@/lib/api-client'
-import { formatCurrency } from '@/lib/format'
+import { avgKisInterval, formatCurrency, formatSeconds } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { GlobalMonkeyControl } from '@/types/api'
-
-function formatSeconds(s: number): string {
-  const rounded = Math.round(s)
-  if (rounded < 60) return `${rounded}초`
-  const m = Math.floor(rounded / 60)
-  const sec = rounded % 60
-  if (m < 60) return sec > 0 ? `${m}분 ${sec}초` : `${m}분`
-  const h = Math.floor(m / 60)
-  const min = m % 60
-  return min > 0 ? `${h}시간 ${min}분` : `${h}시간`
-}
-
-function avgKisInterval(n: number, a: number, b: number): number | null {
-  if (n <= 0 || a <= 0 || b <= 0 || a > b) return null
-  if (a === b) return a / n
-  return (b - a) / (n * Math.log(b / a))
-}
 
 function buildForm(control: GlobalMonkeyControl) {
   return {
@@ -61,8 +44,7 @@ function IntervalHint({
         <p>
           현재 활성 원숭이 <Badge variant="secondary">{n}마리</Badge> 기준, KIS API 평균 호출
           간격은 약{' '}
-          <span className="font-medium text-foreground">{formatSeconds(avgT)}</span>입니다 (범위:{' '}
-          {formatSeconds(a / n)} ~ {formatSeconds(b / n)}).
+          <Badge variant="secondary">{formatSeconds(avgT)}</Badge>입니다.
         </p>
       ) : n === 0 ? (
         <p>활성 원숭이가 없어 평균 호출 간격을 계산할 수 없습니다.</p>
@@ -178,14 +160,6 @@ export function MonkeyConfigCard() {
   const [open, setOpen] = useState(false)
 
   const activeMonkeys = summary?.active_monkey_count ?? 0
-  const avgT = data
-    ? avgKisInterval(
-        activeMonkeys,
-        data.auto_create_min_interval_seconds,
-        data.auto_create_max_interval_seconds,
-      )
-    : null
-  const showAvgBadge = activeMonkeys > 0 && avgT !== null && Number.isFinite(avgT) && avgT > 0
 
   return (
     <Card>
@@ -210,11 +184,6 @@ export function MonkeyConfigCard() {
                   {formatSeconds(data.auto_create_min_interval_seconds)} ~{' '}
                   {formatSeconds(data.auto_create_max_interval_seconds)}
                 </Badge>
-                {showAvgBadge ? (
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    평균 <Badge variant="outline">{formatSeconds(avgT!)}</Badge>
-                  </span>
-                ) : null}
               </div>
             ) : null}
           </div>

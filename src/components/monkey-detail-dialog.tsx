@@ -94,11 +94,14 @@ export function MonkeyDetailDialog({
     initialPageSize: 10,
   })
 
-  const rawOrders = showAllOrders ? (allOrders ?? []) : (monkey?.recent_orders ?? [])
-  // Show orders that reached KIS: pending (체결 대기) and filled (체결 완료);
-  // skipped/failed/created attempts are noise here.
+  // Manage view (showAllOrders): show every order — including skipped/failed
+  // attempts — so managers can audit what each monkey tried and what KIS returned.
+  // Public view (dashboard): keep only orders that reached KIS (pending/filled);
+  // skipped/failed/created attempts are noise there.
   const tradeStatuses = new Set<Order['status']>(['submitted', 'executed', 'succeeded'])
-  const visibleOrders = rawOrders.filter((order) => tradeStatuses.has(order.status))
+  const visibleOrders = showAllOrders
+    ? (allOrders ?? [])
+    : (monkey?.recent_orders ?? []).filter((order) => tradeStatuses.has(order.status))
   const orders = useTableControls<Order>({
     rows: visibleOrders,
     columns: { created_at: (order) => order.created_at },
@@ -267,7 +270,7 @@ export function MonkeyDetailDialog({
                 <>
                   <ul className="flex flex-col gap-1.5">
                     {orders.rows.map((order) => (
-                      <OrderRow key={order.id} order={order} showMonkey={false} />
+                      <OrderRow key={order.id} order={order} showMonkey={false} expandable />
                     ))}
                   </ul>
                   {orders.pageCount > 1 ? (
