@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useGlobalControl } from '@/hooks/use-global-control';
 import { useMarketHours } from '@/hooks/use-market-hours';
+import { useVisitCounter } from '@/hooks/use-visit-counter';
+import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // Defaults until the live schedule loads (09:00 open / 15:30 close / 08:00 check).
@@ -46,6 +48,7 @@ export function MarketStatusBanner() {
 	const [now, setNow] = useState(() => new Date());
 	const { data: control } = useGlobalControl();
 	const { data: marketHours } = useMarketHours();
+	const { data: visits } = useVisitCounter();
 
 	useEffect(() => {
 		const id = setInterval(() => setNow(new Date()), 1000);
@@ -97,6 +100,19 @@ export function MarketStatusBanner() {
 
 	return (
 		<div className="flex flex-col items-center gap-1 font-mono text-xs text-muted-foreground">
+			{visits ? (
+				<div className="flex items-center gap-3 text-[11px] text-muted-foreground/80">
+					<span>
+						오늘 방문{' '}
+						<span className="text-foreground">{formatNumber(visits.today)}</span>
+					</span>
+					<span className="text-muted-foreground/40">·</span>
+					<span>
+						전체 방문{' '}
+						<span className="text-foreground">{formatNumber(visits.total)}</span>
+					</span>
+				</div>
+			) : null}
 			<div className="text-[20px] text-foreground">{timeString} KST</div>
 			<div className="flex items-center gap-2">
 				<StatusDot active={isMarketOpen} label={marketLabel} />
