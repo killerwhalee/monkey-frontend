@@ -155,6 +155,11 @@ export interface MarketHours {
   holiday_check: HourMinute
 }
 
+export interface VisitStats {
+  today: number
+  total: number
+}
+
 export interface KisAccessToken {
   id: number
   environment: string
