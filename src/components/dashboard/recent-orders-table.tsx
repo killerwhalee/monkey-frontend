@@ -87,29 +87,20 @@ export function OrderRow({
   order,
   showMonkey = true,
   isNew = false,
+  expandable = false,
 }: {
   order: Order
   showMonkey?: boolean
   isNew?: boolean
+  expandable?: boolean
 }) {
+  const [open, setOpen] = useState(false)
   const isBuy = order.order_type === ORDER_TYPE.BUY
   const isPending = order.status === 'submitted'
-  const isFilled = FILLED_STATUSES.has(order.status)
-  // A filled order that took less than it asked for is a partial fill.
-  const isPartial =
-    isFilled && order.executed_quantity > 0 && order.executed_quantity < order.requested_quantity
-  const quantity = isPending
-    ? order.requested_quantity
-    : order.executed_quantity || order.requested_quantity
 
-  return (
-    <li
-      className={cn(
-        'flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2',
-        isNew && 'blink-row',
-      )}
-    >
-      <div className="min-w-0">
+  const summary = (
+    <>
+      <div className="min-w-0 text-left">
         <div className="truncate text-sm font-medium">{order.stock.name}</div>
         <div className="font-mono text-xs text-muted-foreground">
           {showMonkey ? `${order.monkey_name} · ` : ''}
@@ -139,12 +130,70 @@ export function OrderRow({
         >
           {ORDER_TYPE_LABELS[order.order_type]}
         </Badge>
+        {/* Always show executed/requested so non-filled orders read e.g. "0/100주". */}
         <span className="font-mono text-sm tabular-nums">
-          {isPartial
-            ? `${formatNumber(order.executed_quantity)}/${formatNumber(order.requested_quantity)}주`
-            : `${formatNumber(quantity)}주`}
+          {`${formatNumber(order.executed_quantity)}/${formatNumber(order.requested_quantity)}주`}
         </span>
+        {expandable ? (
+          <ChevronDownIcon
+            className={cn(
+              'size-4 text-muted-foreground transition-transform',
+              !open && '-rotate-90',
+            )}
+          />
+        ) : null}
       </div>
+    </>
+  )
+
+  if (!expandable) {
+    return (
+      <li
+        className={cn(
+          'flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2',
+          isNew && 'blink-row',
+        )}
+      >
+        {summary}
+      </li>
+    )
+  }
+
+  return (
+    <li className={cn('rounded-md bg-muted/40', isNew && 'blink-row')}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
+      >
+        {summary}
+      </button>
+      {open ? (
+        <div className="flex flex-col gap-3 border-t px-3 py-2">
+          {order.failure_reason ? (
+            <p className="text-xs text-destructive">{order.failure_reason}</p>
+          ) : null}
+          <OrderDetailJson label="KIS 요청" value={order.kis_request} />
+          <OrderDetailJson label="KIS 응답" value={order.kis_response} />
+          <OrderDetailJson label="체결 내역 (output1)" value={order.execution_detail} />
+        </div>
+      ) : null}
     </li>
+  )
+}
+
+function OrderDetailJson({ label, value }: { label: string; value: Record<string, unknown> }) {
+  const isEmpty = !value || Object.keys(value).length === 0
+  return (
+    <div>
+      <div className="mb-1 text-xs font-medium text-muted-foreground">{label}</div>
+      {isEmpty ? (
+        <p className="text-xs text-muted-foreground">없음</p>
+      ) : (
+        <pre className="max-h-60 overflow-auto rounded bg-background/60 p-2 font-mono text-xs">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      )}
+    </div>
   )
 }

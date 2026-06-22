@@ -52,6 +52,7 @@ export interface Order {
   kis_order_status: string
   kis_request: Record<string, unknown>
   kis_response: Record<string, unknown>
+  execution_detail: Record<string, unknown>
   created_at: string
   updated_at: string
 }
