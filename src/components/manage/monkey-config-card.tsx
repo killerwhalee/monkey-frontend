@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary'
 import { useGlobalControl, useUpdateGlobalControl } from '@/hooks/use-global-control'
 import { getApiErrorDetail } from '@/lib/api-client'
+import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { GlobalMonkeyControl } from '@/types/api'
 
@@ -51,12 +53,14 @@ function IntervalHint({
   return (
     <div className="flex flex-col gap-1 text-xs text-muted-foreground">
       <p>
-        원숭이의 거래 주기는 성급함(0~1)에 따라 이 범위({a}~{b}초) 안에서 정해집니다. 성급함이
+        원숭이의 거래 주기는 성급함에 따라{' '}
+        <Badge variant="secondary">{a}초</Badge>~<Badge variant="secondary">{b}초</Badge> 안에서 정해집니다. 성급함이
         높을수록 최소값(빠름)에, 낮을수록 최대값(느림)에 가까워집니다.
       </p>
       {n > 0 && avgT !== null && Number.isFinite(avgT) && avgT > 0 ? (
         <p>
-          현재 활성 원숭이 {n}마리 기준, KIS API 평균 호출 간격은 약{' '}
+          현재 활성 원숭이 <Badge variant="secondary">{n}마리</Badge> 기준, KIS API 평균 호출
+          간격은 약{' '}
           <span className="font-medium text-foreground">{formatSeconds(avgT)}</span>입니다 (범위:{' '}
           {formatSeconds(a / n)} ~ {formatSeconds(b / n)}).
         </p>
@@ -67,11 +71,10 @@ function IntervalHint({
   )
 }
 
-function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
+function ConfigForm({ control, activeMonkeys }: { control: GlobalMonkeyControl; activeMonkeys: number }) {
   const updateControl = useUpdateGlobalControl()
   const [form, setForm] = useState(() => buildForm(control))
   const [error, setError] = useState<string | null>(null)
-  const { data: summary } = useDashboardSummary()
 
   function update(field: keyof ReturnType<typeof buildForm>, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -156,7 +159,7 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
             required
           />
         </div>
-        <IntervalHint form={form} activeMonkeys={summary?.active_monkey_count ?? 0} />
+        <IntervalHint form={form} activeMonkeys={activeMonkeys} />
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -171,7 +174,18 @@ function ConfigForm({ control }: { control: GlobalMonkeyControl }) {
 
 export function MonkeyConfigCard() {
   const { data, isPending } = useGlobalControl()
+  const { data: summary } = useDashboardSummary()
   const [open, setOpen] = useState(false)
+
+  const activeMonkeys = summary?.active_monkey_count ?? 0
+  const avgT = data
+    ? avgKisInterval(
+        activeMonkeys,
+        data.auto_create_min_interval_seconds,
+        data.auto_create_max_interval_seconds,
+      )
+    : null
+  const showAvgBadge = activeMonkeys > 0 && avgT !== null && Number.isFinite(avgT) && avgT > 0
 
   return (
     <Card>
@@ -187,6 +201,22 @@ export function MonkeyConfigCard() {
             <CardDescription>
               새로 생성되는 원숭이에 적용되는 기본값입니다. 변경 후 생성된 원숭이부터 반영됩니다.
             </CardDescription>
+            {data ? (
+              <div className="mt-2 flex flex-wrap gap-1">
+                <Badge variant="secondary">
+                  {formatCurrency(data.auto_create_starting_balance)}
+                </Badge>
+                <Badge variant="secondary">
+                  {formatSeconds(data.auto_create_min_interval_seconds)} ~{' '}
+                  {formatSeconds(data.auto_create_max_interval_seconds)}
+                </Badge>
+                {showAvgBadge ? (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    평균 <Badge variant="outline">{formatSeconds(avgT!)}</Badge>
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <ChevronDownIcon
             className={cn(
@@ -213,7 +243,7 @@ export function MonkeyConfigCard() {
             </div>
           ) : (
             // Re-seed the form from canonical server state whenever it changes.
-            <ConfigForm key={data.updated_at} control={data} />
+            <ConfigForm key={data.updated_at} control={data} activeMonkeys={activeMonkeys} />
           )}
         </CardContent>
       ) : null}

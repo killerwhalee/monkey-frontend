@@ -31,7 +31,6 @@ interface HoverInfo {
 
 const UNIT_LABELS: Record<CandleUnit, string> = {
   '1t': '1틱',
-  '1m': '1분',
   '15m': '15분',
   '1h': '1시간',
   '4h': '4시간',
