@@ -40,6 +40,12 @@ const UNIT_LABELS: Record<CandleUnit, string> = {
 // Load older history once the user pans within this many bars of the left edge.
 const LOAD_OLDER_THRESHOLD = 10
 
+// Fixed candle width (px between bars). Without this, lightweight-charts'
+// fitContent() stretches the candles to fill the width, so a handful of candles
+// render absurdly fat. A constant bar spacing keeps every candle the same width
+// regardless of how many exist; the user can still zoom/pan from this default.
+const DEFAULT_BAR_SPACING = 12
+
 export function CandlestickChart() {
   const [unit, setUnit] = useState<CandleUnit>('1d')
   const { data, isPending } = useCandlesticks(unit)
@@ -142,6 +148,7 @@ export function CandlestickChart() {
         borderColor: 'rgba(255,255,255,0.1)',
         timeVisible: true,
         secondsVisible: false,
+        barSpacing: DEFAULT_BAR_SPACING,
       },
       localization: { dateFormat: 'yyyy-MM-dd' },
       crosshair: { mode: 0 },
@@ -219,9 +226,14 @@ export function CandlestickChart() {
     }
     applyData()
 
-    // Fit once per unit (initial load); later merges keep the user's pan/zoom.
+    // On first draw per unit, anchor the latest candle at the right edge using
+    // the fixed bar spacing (no fitContent → candles keep a constant width even
+    // when only a few exist). Re-applying barSpacing resets any zoom carried
+    // over from the previous unit; later merges keep the user's pan/zoom.
     if (!didFitRef.current && mergedRef.current.size > 0) {
-      chartRef.current?.timeScale().fitContent()
+      const timeScale = chartRef.current?.timeScale()
+      timeScale?.applyOptions({ barSpacing: DEFAULT_BAR_SPACING })
+      timeScale?.scrollToPosition(0, false)
       didFitRef.current = true
     }
   }, [data, unit, applyData])
