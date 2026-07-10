@@ -1,3 +1,11 @@
+/** DRF PageNumberPagination envelope (used by paginated list endpoints). */
+export interface Paginated<T> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
+}
+
 export interface Stock {
   id: number
   market: string
