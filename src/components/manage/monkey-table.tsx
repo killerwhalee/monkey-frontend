@@ -82,14 +82,14 @@ export function MonkeyTable() {
   async function handleForceKill(monkey: Monkey) {
     const confirmed = await confirm({
       title: '원숭이 처분',
-      description: `'${monkey.name}' 원숭이를 처분할까요? 보유 종목은 즉시 매도를 시도하며, 장이 닫혀 있으면 매도되지 않을 수 있습니다.`,
+      description: `'${monkey.name}' 원숭이를 처분할까요? 보유 종목은 시스템 원숭이에게 넘겨져 다음 장에서 매도됩니다. 원숭이 지수 왜곡을 막기 위해 장중에는 처분할 수 없습니다.`,
       confirmLabel: '처분',
       variant: 'destructive',
     })
     if (!confirmed) return
     forceKillMonkey.mutate(monkey.id, {
       onSuccess: () =>
-        toast.success(`'${monkey.name}' 원숭이를 처분했습니다. 보유 종목 매도를 시도했습니다.`),
+        toast.success(`'${monkey.name}' 원숭이를 처분했습니다. 보유 종목은 시스템 원숭이에게 넘겼습니다.`),
       onError: (error) => toast.error(getApiErrorDetail(error) ?? '원숭이 처분에 실패했습니다.'),
     })
   }
