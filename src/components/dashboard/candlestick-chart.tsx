@@ -26,7 +26,7 @@ interface HoverInfo {
   high: number
   low: number
   close: number
-  dayOpen: number
+  dayBase: number
 }
 
 const UNIT_LABELS: Record<CandleUnit, string> = {
@@ -61,9 +61,9 @@ export function CandlestickChart() {
   const noMoreOlderRef = useRef(false)
   const didFitRef = useRef(false)
 
-  // Opening index value per trading day (KST), used as the hover-tooltip
-  // percentage reference. Rebuilt whenever the data is drawn.
-  const dayOpenRef = useRef<Map<number, number>>(new Map())
+  // Change-rate reference per trading day (KST): the previous session's close,
+  // matching the dashboard card's 등락률. Rebuilt whenever the data is drawn.
+  const dayBaseRef = useRef<Map<number, number>>(new Map())
   const [hover, setHover] = useState<HoverInfo | null>(null)
 
   const applyData = useCallback(() => {
@@ -71,13 +71,14 @@ export function CandlestickChart() {
     if (!series) return
     const sorted = [...mergedRef.current.values()].sort((a, b) => a.time - b.time)
     // `time` already carries the KST offset, so flooring by day yields the local
-    // trading day; the first (earliest) candle of each day is that day's open.
-    const dayOpen = new Map<number, number>()
+    // trading day. Prefer the day's prev_close; fall back to the earliest loaded
+    // candle's open only when the day has no baseline.
+    const dayBase = new Map<number, number>()
     for (const candle of sorted) {
       const dayKey = Math.floor(candle.time / SECONDS_PER_DAY)
-      if (!dayOpen.has(dayKey)) dayOpen.set(dayKey, candle.open)
+      if (!dayBase.has(dayKey)) dayBase.set(dayKey, candle.prev_close ?? candle.open)
     }
-    dayOpenRef.current = dayOpen
+    dayBaseRef.current = dayBase
     series.setData(
       sorted.map((candle) => ({
         time: candle.time as UTCTimestamp,
@@ -194,7 +195,7 @@ export function CandlestickChart() {
         high: candle.high,
         low: candle.low,
         close: candle.close,
-        dayOpen: dayOpenRef.current.get(dayKey) ?? candle.open,
+        dayBase: dayBaseRef.current.get(dayKey) ?? candle.open,
       })
     }
     chart.subscribeCrosshairMove(handleCrosshair)
@@ -260,7 +261,7 @@ export function CandlestickChart() {
         <div className="mb-1 font-medium text-muted-foreground">{header}</div>
         <dl className="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-0.5">
           {rows.map(([label, value]) => {
-            const change = info.dayOpen ? value / info.dayOpen - 1 : 0
+            const change = info.dayBase ? value / info.dayBase - 1 : 0
             return (
               <Fragment key={label}>
                 <dt className="text-muted-foreground">{label}</dt>
