@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { fetchCandlesticks, useCandlesticks } from '@/hooks/use-candlesticks'
-import { formatIndex, formatPercent, signColorClass } from '@/lib/format'
+import { formatIndex, formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CANDLE_UNITS, type CandleUnit, type Candlestick } from '@/types/api'
 
@@ -26,7 +26,7 @@ interface HoverInfo {
   high: number
   low: number
   close: number
-  dayOpen: number
+  dayBase: number
 }
 
 const UNIT_LABELS: Record<CandleUnit, string> = {
@@ -46,8 +46,29 @@ const LOAD_OLDER_THRESHOLD = 10
 // regardless of how many exist; the user can still zoom/pan from this default.
 const DEFAULT_BAR_SPACING = 12
 
+// Up/down candle colors: 해외식 (up green / down red) or 국내식 (up red / down
+// blue). The viewer's pick is remembered per browser.
+type ColorScheme = 'global' | 'kr'
+
+const COLOR_SCHEMES: Record<ColorScheme, { label: string; up: string; down: string }> = {
+  global: { label: '해외식', up: '#16a34a', down: '#dc2626' },
+  kr: { label: '국내식', up: '#dc2626', down: '#2563eb' },
+}
+
+const COLOR_SCHEME_KEY = 'monkey.candle-color-scheme'
+
+function loadColorScheme(): ColorScheme {
+  try {
+    return localStorage.getItem(COLOR_SCHEME_KEY) === 'kr' ? 'kr' : 'global'
+  } catch {
+    return 'global'
+  }
+}
+
 export function CandlestickChart() {
   const [unit, setUnit] = useState<CandleUnit>('1d')
+  const [colorScheme, setColorScheme] = useState<ColorScheme>(loadColorScheme)
+  const colors = COLOR_SCHEMES[colorScheme]
   const { data, isPending } = useCandlesticks(unit)
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -61,9 +82,9 @@ export function CandlestickChart() {
   const noMoreOlderRef = useRef(false)
   const didFitRef = useRef(false)
 
-  // Opening index value per trading day (KST), used as the hover-tooltip
-  // percentage reference. Rebuilt whenever the data is drawn.
-  const dayOpenRef = useRef<Map<number, number>>(new Map())
+  // Change-rate reference per trading day (KST): the previous session's close,
+  // matching the dashboard card's 등락률. Rebuilt whenever the data is drawn.
+  const dayBaseRef = useRef<Map<number, number>>(new Map())
   const [hover, setHover] = useState<HoverInfo | null>(null)
 
   const applyData = useCallback(() => {
@@ -71,13 +92,14 @@ export function CandlestickChart() {
     if (!series) return
     const sorted = [...mergedRef.current.values()].sort((a, b) => a.time - b.time)
     // `time` already carries the KST offset, so flooring by day yields the local
-    // trading day; the first (earliest) candle of each day is that day's open.
-    const dayOpen = new Map<number, number>()
+    // trading day. Prefer the day's prev_close; fall back to the earliest loaded
+    // candle's open only when the day has no baseline.
+    const dayBase = new Map<number, number>()
     for (const candle of sorted) {
       const dayKey = Math.floor(candle.time / SECONDS_PER_DAY)
-      if (!dayOpen.has(dayKey)) dayOpen.set(dayKey, candle.open)
+      if (!dayBase.has(dayKey)) dayBase.set(dayKey, candle.prev_close ?? candle.open)
     }
-    dayOpenRef.current = dayOpen
+    dayBaseRef.current = dayBase
     series.setData(
       sorted.map((candle) => ({
         time: candle.time as UTCTimestamp,
@@ -153,13 +175,8 @@ export function CandlestickChart() {
       localization: { dateFormat: 'yyyy-MM-dd' },
       crosshair: { mode: 0 },
     })
+    // Up/down colors are applied by the color-scheme effect below.
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: '#16a34a',
-      downColor: '#dc2626',
-      borderUpColor: '#16a34a',
-      borderDownColor: '#dc2626',
-      wickUpColor: '#16a34a',
-      wickDownColor: '#dc2626',
       priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
     })
 
@@ -194,7 +211,7 @@ export function CandlestickChart() {
         high: candle.high,
         low: candle.low,
         close: candle.close,
-        dayOpen: dayOpenRef.current.get(dayKey) ?? candle.open,
+        dayBase: dayBaseRef.current.get(dayKey) ?? candle.open,
       })
     }
     chart.subscribeCrosshairMove(handleCrosshair)
@@ -207,6 +224,24 @@ export function CandlestickChart() {
       seriesRef.current = null
     }
   }, [])
+
+  // Declared after the chart-creation effect so the series exists on mount.
+  useEffect(() => {
+    const { up, down } = COLOR_SCHEMES[colorScheme]
+    seriesRef.current?.applyOptions({
+      upColor: up,
+      downColor: down,
+      borderUpColor: up,
+      borderDownColor: down,
+      wickUpColor: up,
+      wickDownColor: down,
+    })
+    try {
+      localStorage.setItem(COLOR_SCHEME_KEY, colorScheme)
+    } catch {
+      // Storage unavailable (private mode etc.) — the pick just won't persist.
+    }
+  }, [colorScheme])
 
   useEffect(() => {
     const series = seriesRef.current
@@ -260,13 +295,20 @@ export function CandlestickChart() {
         <div className="mb-1 font-medium text-muted-foreground">{header}</div>
         <dl className="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-0.5">
           {rows.map(([label, value]) => {
-            const change = info.dayOpen ? value / info.dayOpen - 1 : 0
+            const change = info.dayBase ? value / info.dayBase - 1 : 0
             return (
               <Fragment key={label}>
                 <dt className="text-muted-foreground">{label}</dt>
                 <dd className="text-right font-mono tabular-nums">{formatIndex(value)}</dd>
+                {/* Match the candle scheme rather than the site-wide sign colors. */}
                 <dd
-                  className={cn('text-right font-mono tabular-nums', signColorClass(change))}
+                  className={cn(
+                    'text-right font-mono tabular-nums',
+                    change === 0 && 'text-muted-foreground',
+                  )}
+                  style={
+                    change === 0 ? undefined : { color: change > 0 ? colors.up : colors.down }
+                  }
                 >
                   {formatPercent(change)}
                 </dd>
@@ -296,6 +338,16 @@ export function CandlestickChart() {
         <span className="ml-auto text-xs text-muted-foreground">
           드래그·스크롤로 확대·이동할 수 있습니다
         </span>
+        <Button
+          size="xs"
+          variant="ghost"
+          title="캔들 색상 전환 (해외식 ↔ 국내식)"
+          onClick={() => setColorScheme((prev) => (prev === 'kr' ? 'global' : 'kr'))}
+        >
+          <span style={{ color: colors.up }}>▲</span>
+          <span style={{ color: colors.down }}>▼</span>
+          {colors.label}
+        </Button>
       </div>
       <div className="relative h-80 w-full">
         <div ref={containerRef} className={cn('h-full w-full', isEmpty && 'opacity-0')} />

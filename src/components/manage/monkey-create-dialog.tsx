@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAccounts } from '@/hooks/use-accounts'
 import { useCreateMonkey } from '@/hooks/use-monkeys'
+import { getApiErrorDetail } from '@/lib/api-client'
 
 const INITIAL_FORM = {
   account: '',
@@ -86,7 +87,8 @@ export function MonkeyCreateDialog() {
           toast.success(`'${form.name.trim()}' 원숭이를 생성했습니다.`)
           handleOpenChange(false)
         },
-        onError: () => setError('입력값을 확인해 주세요. 생성에 실패했습니다.'),
+        onError: (error) =>
+          setError(getApiErrorDetail(error) ?? '입력값을 확인해 주세요. 생성에 실패했습니다.'),
       },
     )
   }

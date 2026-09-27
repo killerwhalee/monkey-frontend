@@ -235,6 +235,9 @@ export interface Candlestick {
   high: number
   low: number
   close: number
+  /** The trading day's previous-session close (change-rate reference); null
+   * when that day has no index baseline. */
+  prev_close: number | null
 }
 
 export interface DashboardSummary {
