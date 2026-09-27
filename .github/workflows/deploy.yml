@@ -1,13 +1,23 @@
+# Deploy frontend build to production server on push to main.
+#
+# Runs on the self-hosted runner registered directly on the deploy server
+# (killerwhalee-serv-o), so no SSH hop is needed — the built dist/ is rsynced
+# locally into the directory nginx serves.
+
 name: Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: monkey-frontend-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, serv-o]
     steps:
       - uses: actions/checkout@v4
 
@@ -20,13 +30,5 @@ jobs:
 
       - run: npm run build
 
-      - name: Sync dist/ to server
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete
-          path: dist/
-          remote_path: /home/killerwhalee/monkey/frontend/
-          remote_host: ${{ secrets.DEPLOY_HOST }}
-          remote_port: ${{ secrets.DEPLOY_PORT }}
-          remote_user: ${{ secrets.DEPLOY_USER }}
-          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+      - name: Deploy dist/
+        run: rsync -a --delete dist/ /home/killerwhalee/monkey/frontend/
