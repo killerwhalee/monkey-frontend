@@ -7,15 +7,13 @@ const RECENT_ORDER_COUNT = 10
 
 // The Order ledger is paginated server-side (DRF PageNumberPagination). A single
 // monkey's history is bounded, so for the audit dialog we page through all pages
-// and concatenate rather than truncating at the first page.
+// and concatenate rather than truncating at the first page. Sent with auth so
+// staff get the unredacted KIS payloads (the API masks account fields otherwise).
 async function fetchAllMonkeyOrders(monkeyId: number): Promise<Order[]> {
   const orders: Order[] = []
   let page = 1
   for (;;) {
-    const data = await api.get<Paginated<Order>>(
-      `/orders/?monkey=${monkeyId}&page=${page}`,
-      { skipAuth: true },
-    )
+    const data = await api.get<Paginated<Order>>(`/orders/?monkey=${monkeyId}&page=${page}`)
     orders.push(...data.results)
     if (!data.next) break
     page += 1
