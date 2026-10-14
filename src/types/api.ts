@@ -117,7 +117,6 @@ export interface Monkey {
   order_interval_seconds: number
   killed_at: string | null
   holdings: Holding[]
-  recent_orders: Order[]
   metrics: MonkeyMetrics
 }
 

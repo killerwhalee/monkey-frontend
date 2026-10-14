@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useMonkeyOrders } from '@/hooks/use-orders'
+import { useMonkeyOrders, useRecentMonkeyOrders } from '@/hooks/use-orders'
 import { useTableControls } from '@/hooks/use-table-controls'
 import {
   formatCurrency,
@@ -74,10 +74,15 @@ export function MonkeyDetailDialog({
   onOpenChange,
   showAllOrders = false,
 }: MonkeyDetailDialogProps) {
-  const { data: allOrders, isPending: ordersPending } = useMonkeyOrders(
+  const { data: allOrders, isPending: allOrdersPending } = useMonkeyOrders(
     monkey?.id ?? null,
     open && showAllOrders,
   )
+  const { data: recentOrders, isPending: recentOrdersPending } = useRecentMonkeyOrders(
+    monkey?.id ?? null,
+    open && !showAllOrders,
+  )
+  const ordersPending = showAllOrders ? allOrdersPending : recentOrdersPending
 
   const holdings = useTableControls<Holding>({
     rows: monkey?.holdings ?? [],
@@ -101,7 +106,7 @@ export function MonkeyDetailDialog({
   const tradeStatuses = new Set<Order['status']>(['submitted', 'executed', 'succeeded'])
   const visibleOrders = showAllOrders
     ? (allOrders ?? [])
-    : (monkey?.recent_orders ?? []).filter((order) => tradeStatuses.has(order.status))
+    : (recentOrders ?? []).filter((order) => tradeStatuses.has(order.status))
   const orders = useTableControls<Order>({
     rows: visibleOrders,
     columns: { created_at: (order) => order.created_at },
@@ -258,7 +263,7 @@ export function MonkeyDetailDialog({
             </Section>
 
             <Section title={`주문 내역 ${formatNumber(visibleOrders.length)}건`}>
-              {showAllOrders && ordersPending ? (
+              {ordersPending ? (
                 <div className="flex flex-col gap-2">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
