@@ -30,7 +30,10 @@ export function AppShell() {
     <div className="flex min-h-svh flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
-          <NavLink to="/" className="font-mono text-sm font-semibold tracking-widest text-foreground">
+          <NavLink
+            to="/"
+            className="-mx-1 inline-flex min-h-8 items-center px-1 font-mono text-sm font-semibold tracking-widest text-foreground"
+          >
             MONKEY
           </NavLink>
           <nav className="flex items-center gap-1">
@@ -56,14 +59,14 @@ export function AppShell() {
             <button
               type="button"
               onClick={logout}
-              className="text-muted-foreground/50 transition-colors hover:text-foreground hover:underline"
+              className="inline-flex min-h-6 items-center px-1 text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
               로그아웃
             </button>
           ) : (
             <NavLink
               to="/login"
-              className="text-muted-foreground/50 transition-colors hover:text-foreground hover:underline"
+              className="inline-flex min-h-6 items-center px-1 text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
               관리자 로그인
             </NavLink>

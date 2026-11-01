@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { MarketStatusBanner } from '@/components/dashboard/market-status-banner';
 import { IndexReturnsDialog } from '@/components/dashboard/index-returns-dialog';
 import { MonkeyListDialog } from '@/components/dashboard/monkey-list-dialog';
@@ -6,7 +6,6 @@ import { PerformanceChartCard } from '@/components/dashboard/performance-chart-c
 import { ProjectIntroSection } from '@/components/dashboard/project-intro-section';
 import { RecentOrdersTable } from '@/components/dashboard/recent-orders-table';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { TraitHistogramDialog } from '@/components/dashboard/trait-histogram-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
 import { useMonkeys } from '@/hooks/use-monkeys';
@@ -18,11 +17,20 @@ import {
   signColorClass,
 } from '@/lib/format';
 
+// recharts is only needed by this dialog; keep it out of the dashboard's first load.
+const TraitHistogramDialog = lazy(() =>
+  import('@/components/dashboard/trait-histogram-dialog').then((module) => ({
+    default: module.TraitHistogramDialog,
+  })),
+);
+
 export function DashboardPage() {
   const { data, isPending, isError } = useDashboardSummary();
   const { data: monkeys } = useMonkeys();
   const [isMonkeyListOpen, setIsMonkeyListOpen] = useState(false);
   const [isTraitOpen, setIsTraitOpen] = useState(false);
+  // Mount the lazy dialog on first open, then keep it so its close animation still plays.
+  const [hasOpenedTrait, setHasOpenedTrait] = useState(false);
   const [isReturnsOpen, setIsReturnsOpen] = useState(false);
 
   // Average traits over the living, non-system gene pool (matches the histogram
@@ -39,7 +47,7 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-center font-mono text-2xl font-semibold tracking-tight">
+        <h1 className="text-center text-2xl font-semibold tracking-tight">
           원숭이 프로젝트
         </h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
@@ -76,7 +84,10 @@ export function DashboardPage() {
                   성급함 {formatTrait(avgHaste)} · 배짱 {formatTrait(avgBalls)}
                 </span>
               }
-              onClick={() => setIsTraitOpen(true)}
+              onClick={() => {
+                setHasOpenedTrait(true);
+                setIsTraitOpen(true);
+              }}
             />
             <StatCard
               label="원숭이 지수"
@@ -115,7 +126,11 @@ export function DashboardPage() {
         onOpenChange={setIsMonkeyListOpen}
       />
 
-      <TraitHistogramDialog open={isTraitOpen} onOpenChange={setIsTraitOpen} />
+      {hasOpenedTrait ? (
+        <Suspense fallback={null}>
+          <TraitHistogramDialog open={isTraitOpen} onOpenChange={setIsTraitOpen} />
+        </Suspense>
+      ) : null}
 
       <IndexReturnsDialog open={isReturnsOpen} onOpenChange={setIsReturnsOpen} />
     </div>

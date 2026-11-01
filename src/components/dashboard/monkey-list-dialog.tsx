@@ -77,6 +77,8 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
           ) : activeMonkeys && activeMonkeys.length > 0 ? (
             <>
               <Input
+                type="search"
+                aria-label="원숭이 이름으로 검색"
                 placeholder="원숭이 이름으로 검색"
                 value={controls.search}
                 onChange={(event) => controls.setSearch(event.target.value)}
@@ -94,6 +96,7 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
                     <SortableHead
                       sortKey="is_active"
                       label="운영 상태"
+                      className="hidden sm:table-cell"
                       activeKey={controls.sortKey}
                       direction={controls.sortDir}
                       onToggle={controls.toggleSort}
@@ -114,14 +117,29 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
                       direction={controls.sortDir}
                       onToggle={controls.toggleSort}
                     />
-                    <TableHead />
+                    <TableHead className="hidden sm:table-cell">
+                      <span className="sr-only">상세</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {controls.rows.map((monkey) => (
                     <TableRow key={monkey.id}>
-                      <TableCell className="font-medium">{monkey.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMonkeyId(monkey.id)}
+                          className="-my-1 min-h-7 py-1 text-left underline-offset-4 hover:underline"
+                        >
+                          {monkey.name}
+                        </button>
+                        {monkey.is_active ? null : (
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground sm:hidden">
+                            중단됨
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
                           {monkey.is_active ? '운영 중' : '중단됨'}
                         </span>
@@ -137,7 +155,7 @@ export function MonkeyListDialog({ open, onOpenChange }: MonkeyListDialogProps) 
                       >
                         {formatPercent(monkey.metrics.earning_ratio)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="hidden text-right sm:table-cell">
                         <Button variant="outline" size="sm" onClick={() => setSelectedMonkeyId(monkey.id)}>
                           자세히
                         </Button>

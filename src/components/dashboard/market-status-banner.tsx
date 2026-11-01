@@ -101,19 +101,19 @@ export function MarketStatusBanner() {
 	return (
 		<div className="flex flex-col items-center gap-1 font-mono text-xs text-muted-foreground">
 			{visits ? (
-				<div className="flex items-center gap-3 text-[11px] text-muted-foreground/80">
+				<div className="flex items-center gap-3">
 					<span>
 						오늘 방문{' '}
 						<span className="text-foreground">{formatNumber(visits.today)}</span>
 					</span>
-					<span className="text-muted-foreground/40">·</span>
+					<span aria-hidden="true" className="text-muted-foreground/40">·</span>
 					<span>
 						전체 방문{' '}
 						<span className="text-foreground">{formatNumber(visits.total)}</span>
 					</span>
 				</div>
 			) : null}
-			<div className="text-[20px] text-foreground">{timeString} KST</div>
+			<div className="text-xl tabular-nums text-foreground">{timeString} KST</div>
 			<div className="flex items-center gap-2">
 				<StatusDot active={isMarketOpen} label={marketLabel} />
 				<StatusDot
@@ -122,7 +122,7 @@ export function MarketStatusBanner() {
 				/>
 			</div>
 			{countdown ? (
-				<span className="text-[11px] text-muted-foreground/70">
+				<span className="tabular-nums">
 					{countdown.label} {formatDuration(countdown.remainingMs)}
 				</span>
 			) : null}

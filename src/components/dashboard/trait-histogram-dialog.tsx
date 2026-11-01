@@ -54,10 +54,10 @@ function TraitHistogram({
     <div className="flex flex-col gap-2">
       <h3 className="text-sm font-medium">{title}</h3>
       <ChartContainer config={chartConfig} className="aspect-auto h-48 w-full">
-        <BarChart data={histogram(values)} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+        <BarChart data={histogram(values)} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis dataKey="range" tickLine={false} axisLine={false} tickMargin={8} />
-          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={32} />
+          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
           <ChartTooltip
             content={<ChartTooltipContent labelFormatter={(label) => `${label}%`} />}
           />

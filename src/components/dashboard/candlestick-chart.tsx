@@ -321,6 +321,11 @@ export function CandlestickChart() {
   }
 
   const isEmpty = !!data && data.length === 0
+  // The canvas is invisible to screen readers; give it the reading a sighted viewer gets first.
+  const latest = data?.at(-1)
+  const chartLabel = latest
+    ? `원숭이 지수 ${UNIT_LABELS[unit]} 캔들 차트. 최근 종가 ${formatIndex(latest.close)}`
+    : `원숭이 지수 ${UNIT_LABELS[unit]} 캔들 차트`
 
   return (
     <div className="flex flex-col gap-3">
@@ -330,6 +335,7 @@ export function CandlestickChart() {
             key={value}
             size="xs"
             variant={value === unit ? 'secondary' : 'ghost'}
+            aria-pressed={value === unit}
             onClick={() => setUnit(value)}
           >
             {UNIT_LABELS[value]}
@@ -342,15 +348,21 @@ export function CandlestickChart() {
           size="xs"
           variant="ghost"
           title="캔들 색상 전환 (해외식 ↔ 국내식)"
+          aria-label={`캔들 색상: ${colors.label}. 눌러서 전환`}
           onClick={() => setColorScheme((prev) => (prev === 'kr' ? 'global' : 'kr'))}
         >
-          <span style={{ color: colors.up }}>▲</span>
-          <span style={{ color: colors.down }}>▼</span>
+          <span aria-hidden="true" style={{ color: colors.up }}>▲</span>
+          <span aria-hidden="true" style={{ color: colors.down }}>▼</span>
           {colors.label}
         </Button>
       </div>
       <div className="relative h-80 w-full">
-        <div ref={containerRef} className={cn('h-full w-full', isEmpty && 'opacity-0')} />
+        <div
+          ref={containerRef}
+          role="img"
+          aria-label={chartLabel}
+          className={cn('h-full w-full', isEmpty && 'opacity-0')}
+        />
         {hover && !isEmpty ? renderTooltip(hover) : null}
         {isPending && !data ? (
           <Skeleton className="absolute inset-0" />

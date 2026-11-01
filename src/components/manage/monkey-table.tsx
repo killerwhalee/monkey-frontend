@@ -166,21 +166,25 @@ export function MonkeyTable() {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-start justify-between gap-4">
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <CardTitle>원숭이 관리</CardTitle>
           <CardDescription>
-            전체 {formatNumber(totalCount)}마리 중 {formatNumber(activeCount)}마리 운영 중
+            {isPending
+              ? '원숭이 목록을 불러오는 중…'
+              : `전체 ${formatNumber(totalCount)}마리 중 ${formatNumber(activeCount)}마리 운영 중`}
           </CardDescription>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
           <MonkeyCreateDialog />
           <MonkeyBulkCreateDialog />
           <Input
-            placeholder="원숭이 이름으로 검색"
+            type="search"
+            aria-label="원숭이 이름으로 검색"
+            placeholder="이름 검색"
             value={controls.search}
             onChange={(event) => controls.setSearch(event.target.value)}
-            className="sm:max-w-xs"
+            className="min-w-40 flex-1 sm:max-w-xs"
           />
         </div>
       </CardHeader>

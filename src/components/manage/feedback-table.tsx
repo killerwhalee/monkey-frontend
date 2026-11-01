@@ -38,14 +38,16 @@ export function FeedbackTable() {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-start justify-between gap-4">
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <CardTitle>피드백 관리</CardTitle>
           <CardDescription>
-            전체 {totalCount}건 · 신규 {newCount}건
+            {isPending ? '피드백을 불러오는 중…' : `전체 ${totalCount}건 · 신규 ${newCount}건`}
           </CardDescription>
         </div>
         <Input
+          type="search"
+          aria-label="이메일 또는 제목으로 검색"
           placeholder="이메일 또는 제목으로 검색"
           value={controls.search}
           onChange={(event) => controls.setSearch(event.target.value)}

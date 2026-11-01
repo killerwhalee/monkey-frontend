@@ -1,13 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfigValue } from '@/components/ui/config-value';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
 import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
 import { useGlobalControl } from '@/hooks/use-global-control';
 import { useMarketHours } from '@/hooks/use-market-hours';
@@ -53,7 +45,7 @@ export function ProjectIntroSection() {
 				<CardTitle>프로젝트 소개</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<article className="flex flex-col gap-6 text-sm leading-relaxed text-muted-foreground">
+				<article className="flex max-w-3xl flex-col gap-6 text-sm leading-relaxed text-muted-foreground">
 					<blockquote className="border-l-2 border-primary/40 pl-4 italic text-foreground">
 						과연 랜덤하게 매수·매도 버튼만 누르는 원숭이는 사람 투자자를 이길 수
 						있을까?
@@ -131,38 +123,27 @@ export function ProjectIntroSection() {
 							자주</span>, <span className="font-medium text-foreground">얼마나 크게</span>{' '}
 							거래하는지를 결정합니다. 현재 설정은 다음과 같습니다.
 						</p>
-						<div className="mt-3">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>항목</TableHead>
-										<TableHead className="text-right">값</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									<TableRow>
-										<TableCell>초기 자본</TableCell>
-										<TableCell className="text-right">
-											{startingBalanceChip}
-										</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell>성급함 (거래 빈도, 단위 %)</TableCell>
-										<TableCell className="text-right">
-											퍼센트 값이 높을수록 거래 주기가 짧아집니다. 주기는 {intervalRangeChips}{' '}
-											범위에서 정해집니다.
-										</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell>배짱 (거래 수량, 단위 %)</TableCell>
-										<TableCell className="text-right">
-											퍼센트 값이 높을수록 한 번에 더 많이 매매합니다. (살 수 있는/보유한
-											수량에 비례)
-										</TableCell>
-									</TableRow>
-								</TableBody>
-							</Table>
-						</div>
+						{/* Label/value pairs with prose values: stacks on phones instead of scrolling sideways. */}
+						<dl className="mt-3 divide-y divide-border border-y border-border">
+							<div className="grid gap-1 py-2.5 sm:grid-cols-[13rem_1fr] sm:gap-4">
+								<dt className="text-foreground">초기 자본</dt>
+								<dd>{startingBalanceChip}</dd>
+							</div>
+							<div className="grid gap-1 py-2.5 sm:grid-cols-[13rem_1fr] sm:gap-4">
+								<dt className="text-foreground">성급함 (거래 빈도, 단위 %)</dt>
+								<dd>
+									퍼센트 값이 높을수록 거래 주기가 짧아집니다. 주기는 {intervalRangeChips}{' '}
+									범위에서 정해집니다.
+								</dd>
+							</div>
+							<div className="grid gap-1 py-2.5 sm:grid-cols-[13rem_1fr] sm:gap-4">
+								<dt className="text-foreground">배짱 (거래 수량, 단위 %)</dt>
+								<dd>
+									퍼센트 값이 높을수록 한 번에 더 많이 매매합니다. (살 수 있는/보유한
+									수량에 비례)
+								</dd>
+							</div>
+						</dl>
 						<p className="mt-3">
 							원숭이의 거래 주기는 성급함에 따라{' '}
 							<ConfigValue>{minInterval}초</ConfigValue>~
