@@ -45,24 +45,28 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
   return (
     <Card>
       <CardHeader>
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          className="flex w-full items-center justify-between gap-2 text-left"
-        >
-          <CardTitle>
-            최근 체결 주문
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {formatNumber(succeeded.length)}건
+        <CardTitle>
+          <button
+            type="button"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-expanded={open}
+            className="-my-1 flex min-h-8 w-full items-center justify-between gap-2 py-1 text-left"
+          >
+            <span>
+              최근 체결 주문
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {formatNumber(succeeded.length)}건
+              </span>
             </span>
-          </CardTitle>
-          <ChevronDownIcon
-            className={cn(
-              'size-4 text-muted-foreground transition-transform',
-              !open && '-rotate-90',
-            )}
-          />
-        </button>
+            <ChevronDownIcon
+              aria-hidden="true"
+              className={cn(
+                'size-4 text-muted-foreground transition-transform',
+                !open && '-rotate-90',
+              )}
+            />
+          </button>
+        </CardTitle>
       </CardHeader>
       {open ? (
         <CardContent>
@@ -73,7 +77,12 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
           ) : (
             <ul className="flex flex-col gap-1.5">
               {succeeded.map((order) => (
-                <OrderRow key={order.id} order={order} isNew={newIds.has(order.id)} />
+                <OrderRow
+                  key={order.id}
+                  order={order}
+                  isNew={newIds.has(order.id)}
+                  showStatus={false}
+                />
               ))}
             </ul>
           )}
@@ -86,11 +95,14 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
 export function OrderRow({
   order,
   showMonkey = true,
+  showStatus = true,
   isNew = false,
   expandable = false,
 }: {
   order: Order
   showMonkey?: boolean
+  // The dashboard list only holds filled orders, so its status badge would repeat the title.
+  showStatus?: boolean
   isNew?: boolean
   expandable?: boolean
 }) {
@@ -102,23 +114,30 @@ export function OrderRow({
     <>
       <div className="min-w-0 text-left">
         <div className="truncate text-sm font-medium">{order.stock.name}</div>
-        <div className="font-mono text-xs text-muted-foreground">
-          {showMonkey ? `${order.monkey_name} · ` : ''}
-          {formatDateTime(order.created_at)}
+        <div className="flex flex-wrap gap-x-1.5 font-mono text-xs text-muted-foreground">
+          {showMonkey ? (
+            <>
+              <span className="truncate">{order.monkey_name}</span>
+              <span aria-hidden="true">·</span>
+            </>
+          ) : null}
+          <span className="whitespace-nowrap">{formatDateTime(order.created_at)}</span>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <Badge
-          variant="outline"
-          className={cn(
-            'w-fit',
-            isPending
-              ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-              : 'border-muted-foreground/20 bg-muted text-muted-foreground',
-          )}
-        >
-          {ORDER_STATUS_LABELS[order.status]}
-        </Badge>
+        {showStatus ? (
+          <Badge
+            variant="outline"
+            className={cn(
+              'w-fit',
+              isPending
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                : 'border-muted-foreground/20 bg-muted text-muted-foreground',
+            )}
+          >
+            {ORDER_STATUS_LABELS[order.status]}
+          </Badge>
+        ) : null}
         <Badge
           variant="outline"
           className={cn(
