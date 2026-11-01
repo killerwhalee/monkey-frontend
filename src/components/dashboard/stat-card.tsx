@@ -33,7 +33,7 @@ export function StatCard({ label, value, description, valueClassName, onClick }:
     >
       <CardHeader>
         <CardDescription>{label}</CardDescription>
-        <CardTitle className={cn('font-mono text-3xl font-semibold tabular-nums', valueClassName)}>
+        <CardTitle as="div" className={cn('font-mono text-3xl font-semibold tabular-nums', valueClassName)}>
           {value}
         </CardTitle>
       </CardHeader>

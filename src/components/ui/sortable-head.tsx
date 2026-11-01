@@ -32,7 +32,7 @@ export function SortableHead({
         type="button"
         onClick={() => onToggle(sortKey)}
         className={cn(
-          'inline-flex items-center gap-1 transition-colors hover:text-foreground',
+          '-my-1 inline-flex min-h-7 items-center gap-1 py-1 transition-colors hover:text-foreground',
           align === 'right' && 'flex-row-reverse',
           active ? 'text-foreground' : 'text-muted-foreground',
         )}

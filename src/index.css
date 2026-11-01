@@ -57,42 +57,6 @@
   --sidebar-ring: oklch(0.6 0.1 200);
 }
 
-.dark {
-  --background: oklch(0.13 0.012 260);
-  --foreground: oklch(0.94 0.01 260);
-  --card: oklch(0.17 0.014 260);
-  --card-foreground: oklch(0.94 0.01 260);
-  --popover: oklch(0.17 0.014 260);
-  --popover-foreground: oklch(0.94 0.01 260);
-  --primary: oklch(0.78 0.16 165);
-  --primary-foreground: oklch(0.16 0.03 165);
-  --secondary: oklch(0.24 0.016 260);
-  --secondary-foreground: oklch(0.94 0.01 260);
-  --muted: oklch(0.22 0.014 260);
-  --muted-foreground: oklch(0.65 0.02 260);
-  --accent: oklch(0.27 0.05 230);
-  --accent-foreground: oklch(0.94 0.01 260);
-  --destructive: oklch(0.66 0.21 25);
-  --destructive-foreground: oklch(0.97 0.01 25);
-  --positive: oklch(0.78 0.16 165);
-  --positive-foreground: oklch(0.16 0.03 165);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.1 200);
-  --chart-1: oklch(0.78 0.16 165);
-  --chart-2: oklch(0.7 0.18 35);
-  --chart-3: oklch(0.65 0.18 260);
-  --chart-4: oklch(0.78 0.14 90);
-  --chart-5: oklch(0.7 0.16 320);
-  --sidebar: oklch(0.15 0.012 260);
-  --sidebar-foreground: oklch(0.94 0.01 260);
-  --sidebar-primary: oklch(0.78 0.16 165);
-  --sidebar-primary-foreground: oklch(0.16 0.03 165);
-  --sidebar-accent: oklch(0.24 0.016 260);
-  --sidebar-accent-foreground: oklch(0.94 0.01 260);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.6 0.1 200);
-}
 
 @theme inline {
   --color-background: var(--background);
@@ -147,7 +111,9 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --font-sans: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'IBM Plex Mono', monospace;
+  /* JetBrains Mono has no Hangul; without Pretendard here, Korean text in font-mono falls
+     back to the OS fixed-width face (GulimChe on Windows). */
+  --font-mono: 'JetBrains Mono', 'Pretendard Variable', Pretendard, ui-monospace, monospace;
 }
 
 @layer base {
@@ -155,8 +121,30 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    color-scheme: dark;
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 35%, transparent);
+    color: var(--foreground);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
   }
 }
 
@@ -173,4 +161,31 @@
 
 .blink-row {
   animation: blink-highlight 1.4s ease-out;
+}
+
+/* Reduced motion: dialogs, sheets and popovers keep their fade but drop the zoom/slide, and
+   the arrival highlight keeps its tint without the expanding ring. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    --tw-enter-rotate: 0;
+    --tw-exit-rotate: 0;
+  }
+
+  .blink-row {
+    animation-name: blink-tint;
+  }
+}
+
+@keyframes blink-tint {
+  from {
+    background-color: color-mix(in oklab, var(--positive) 18%, transparent);
+  }
 }

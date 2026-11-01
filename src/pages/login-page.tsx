@@ -52,7 +52,7 @@ export function LoginPage() {
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-6 py-16">
       <div className="text-center">
-        <h1 className="font-mono text-xl font-semibold tracking-tight">관리자 로그인</h1>
+        <h1 className="text-xl font-semibold tracking-tight">관리자 로그인</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           원숭이 운영 관리 기능은 관리자 계정으로만 이용할 수 있습니다.
         </p>
